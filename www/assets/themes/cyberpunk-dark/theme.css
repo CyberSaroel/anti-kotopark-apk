@@ -1,0 +1,141 @@
+/* Cyberpunk 2077 — Тёмная тема */
+:root {
+  --bg-color: #0A0A0F;
+  --text-color: #EDEDED;
+  --primary-color: #FCEE0A;
+  --primary-hover: #FCEE0A;
+  --cell-bg: #12121C;
+  --cell-border: #00F0FF;
+  --cell-selected: #FCEE0A;
+  --cell-target: #00F0FF;
+  --water-bg: #0A0A2E;
+  --button-bg: #12121C;
+  --button-hover: #1C1C2E;
+  --button-text: #EDEDED;
+  --level-btn-bg: #12121C;
+  --level-btn-done-bg: #1A1A00;
+  --level-btn-done-border: #FCEE0A;
+}
+
+body {
+  background: var(--bg-color);
+  color: var(--text-color);
+  text-shadow: 0 0 5px currentColor;
+}
+
+.cell {
+  background: var(--cell-bg);
+  border-color: var(--cell-border);
+  box-shadow: 0 0 5px var(--cell-border);
+}
+
+.cell.selected {
+  outline-color: var(--cell-selected);
+  box-shadow: 0 0 10px var(--cell-selected);
+}
+
+.cell.target {
+  outline-color: var(--cell-target);
+  box-shadow: 0 0 10px var(--cell-target);
+}
+
+.cell.water {
+  background-color: var(--water-bg);
+  box-shadow: 0 0 5px var(--water-bg);
+}
+
+button {
+  background: var(--button-bg);
+  color: var(--button-text);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 5px var(--primary-color);
+}
+
+button:hover {
+  background: var(--button-hover);
+  box-shadow: 0 0 10px var(--primary-color);
+}
+
+.level-btn {
+  background: var(--level-btn-bg);
+  border-color: var(--primary-color);
+}
+
+.level-btn.done {
+  background: var(--level-btn-done-bg);
+  border-color: var(--level-btn-done-border);
+  box-shadow: 0 0 5px var(--level-btn-done-border);
+}
+
+.skin-btn, .theme-select-btn, .victory-sound-select-btn {
+  background: var(--primary-color);
+  color: #0A0A0F;
+  box-shadow: 0 0 10px var(--primary-color);
+}
+
+.skin-btn:hover, .theme-select-btn:hover:not(:disabled), .victory-sound-select-btn:hover:not(:disabled) {
+  background: var(--primary-hover);
+  box-shadow: 0 0 15px var(--primary-hover);
+}
+
+/* Кнопки победы и импичмента */
+.win-btn {
+  background: var(--button-bg);
+  border-color: var(--primary-color);
+  color: var(--button-text);
+}
+.win-btn:hover {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  color: #0A0A0F;
+}
+
+/* Счётчики на игровом экране — жёлтая обводка как у кнопок */
+.stat-item {
+  border: 2px solid #FCEE0A !important;
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+
+/* Mobile: remove heavy glow shadows for low-end GPUs */
+@media (max-width: 768px) {
+  body {
+    text-shadow: none !important;
+  }
+
+  .cell {
+    box-shadow: none;
+  }
+
+  .cell.water {
+    box-shadow: none;
+  }
+
+  .cell.selected {
+    box-shadow: 0 0 4px var(--cell-selected);
+  }
+
+  .cell.target {
+    box-shadow: 0 0 4px var(--cell-target);
+  }
+
+  button {
+    box-shadow: none;
+  }
+
+  button:hover {
+    box-shadow: none;
+  }
+
+  .level-btn.done {
+    box-shadow: none;
+  }
+
+  .skin-btn, .theme-select-btn, .victory-sound-select-btn {
+    box-shadow: none;
+  }
+
+  .skin-btn:hover, .theme-select-btn:hover:not(:disabled), .victory-sound-select-btn:hover:not(:disabled) {
+    box-shadow: none;
+  }
+}

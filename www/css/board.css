@@ -1,0 +1,61 @@
+#board {
+  display: grid;
+  grid-template-columns: repeat(var(--cols), var(--cell-w));
+  grid-template-rows: repeat(var(--rows), var(--cell-h));
+  gap: 4px;
+  margin: 12px auto;
+  width: max-content;
+  max-width: 100%;
+  touch-action: manipulation;
+}
+.cell {
+  width: var(--cell-w);
+  height: var(--cell-h);
+  background: var(--cell-bg);
+  border: 1px solid var(--cell-border);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--cell-font-size);
+  cursor: pointer;
+  user-select: none;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+.cell.empty { background-image: url(../assets/terrain/grass.png); background-size: 100% 100%; background-position: center; }
+.cell:not(.empty):not(.water) { background-image: url(../assets/terrain/grass.png); background-size: 100% 100%; background-position: center; }
+/* Вода: текстура; пока нет файла — синий фон как запасной вариант */
+.cell.water { background-color: var(--water-bg); background-image: url(../assets/terrain/water.png); cursor: not-allowed; }
+
+.cell.target {
+  z-index: 1;
+}
+
+.cell.target::before {
+  content: "";
+  position: absolute;
+  inset: calc(var(--cell-outline) * -1);
+  border: var(--cell-outline) dashed var(--cell-target);
+  border-radius: 13px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.cell.selected {
+  z-index: 3;
+}
+
+.cell.selected::after {
+  content: "";
+  position: absolute;
+  inset: calc(var(--cell-outline) * -1);
+  border: var(--cell-outline) solid var(--cell-selected);
+  border-radius: 13px;
+  pointer-events: none;
+  z-index: 2;
+}

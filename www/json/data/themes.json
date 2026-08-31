@@ -1,0 +1,159 @@
+{
+  "themes": [
+    {
+      "id": "anti-kotopark",
+      "name": "Соционические коты: Антикотопарк",
+      "description": "Кожаный переплёт, золото и пергамент — книжная тема",
+      "cssFile": "assets/themes/anti-kotopark/theme.css",
+      "preview": {
+        "background": "#f1e6d2",
+        "primary": "#d49a3c",
+        "cell": "#3d1130"
+      }
+    },
+    {
+      "id": "neon-light",
+      "name": "Неоновая (светлая)",
+      "description": "Яркая неоновая тема на светлом фоне",
+      "cssFile": "assets/themes/neon-light/theme.css",
+      "preview": {
+        "background": "#f0f4ff",
+        "primary": "#ff0080",
+        "cell": "#00e5ff"
+      }
+    },
+    {
+      "id": "classic",
+      "name": "Классическая",
+      "description": "Оригинальная тема оформления",
+      "cssFile": "assets/themes/classic/theme.css",
+      "preview": {
+        "background": "#eef",
+        "primary": "#6c5ce7",
+        "cell": "#ddd"
+      }
+    },
+    {
+      "id": "dark",
+      "name": "Тёмная",
+      "description": "Тёмная тема для комфортной игры",
+      "cssFile": "assets/themes/dark/theme.css",
+      "preview": {
+        "background": "#1a1a2e",
+        "primary": "#16213e",
+        "cell": "#0f3460"
+      }
+    },
+    {
+      "id": "neon",
+      "name": "Неоновая (тёмная)",
+      "description": "Яркая неоновая тема на тёмном фоне",
+      "cssFile": "assets/themes/neon/theme.css",
+      "preview": {
+        "background": "#0a0a14",
+        "primary": "#ff0080",
+        "cell": "#00e5ff"
+      }
+    },
+    {
+      "id": "chocolate",
+      "name": "Молочный шоколад",
+      "description": "Тёплая шоколадная тема",
+      "cssFile": "assets/themes/chocolate/theme.css",
+      "preview": {
+        "background": "#3d2314",
+        "primary": "#8b4513",
+        "cell": "#5c3a21"
+      }
+    },
+    {
+      "id": "chocolate-dark",
+      "name": "Тёмный шоколад",
+      "description": "Тёмная шоколадная тема с насыщенным какао",
+      "cssFile": "assets/themes/chocolate-dark/theme.css",
+      "preview": {
+        "background": "#1A0F0A",
+        "primary": "#7B4A24",
+        "cell": "#2A1912"
+      }
+    },
+    {
+      "id": "chocolate-white",
+      "name": "Белый шоколад",
+      "description": "Светлая тема с карамельными акцентами",
+      "cssFile": "assets/themes/chocolate-white/theme.css",
+      "preview": {
+        "background": "#FBF6EE",
+        "primary": "#C8A16A",
+        "cell": "#FFFFFF"
+      }
+    },
+    {
+      "id": "vampire",
+      "name": "Вампирская (тёмная)",
+      "description": "Готическая чёрно-красная тема",
+      "cssFile": "assets/themes/vampire/theme.css",
+      "preview": {
+        "background": "#000000",
+        "primary": "#cc0000",
+        "cell": "#660000"
+      }
+    },
+    {
+      "id": "vampire-light",
+      "name": "Вампирская (светлая)",
+      "description": "Светлая готическая тема с кроваво-красными акцентами",
+      "cssFile": "assets/themes/vampire-light/theme.css",
+      "preview": {
+        "background": "#F7EDED",
+        "primary": "#8B0000",
+        "cell": "#FFFFFF"
+      }
+    },
+    {
+      "id": "cyberpunk-dark",
+      "name": "Cyberpunk 2077 (тёмная)",
+      "description": "Тёмная тема в стиле Cyberpunk 2077",
+      "cssFile": "assets/themes/cyberpunk-dark/theme.css",
+      "preview": {
+        "background": "#0A0A0F",
+        "primary": "#FCEE0A",
+        "cell": "#00F0FF"
+      }
+    },
+    {
+      "id": "cyberpunk-light",
+      "name": "Cyberpunk 2077 (светлая)",
+      "description": "Светлая тема в стиле Cyberpunk 2077",
+      "cssFile": "assets/themes/cyberpunk-light/theme.css",
+      "preview": {
+        "background": "#F2F0E4",
+        "primary": "#FCEE0A",
+        "cell": "#FFFFFF"
+      }
+    },
+    {
+      "id": "alien-dark",
+      "name": "Инопланетная (тёмная)",
+      "description": "Тёмная тема в фиолетовых оттенках",
+      "cssFile": "assets/themes/alien-dark/theme.css",
+      "preview": {
+        "background": "#13101E",
+        "primary": "#6C5AA6",
+        "cell": "#211B36"
+      }
+    },
+    {
+      "id": "alien-light",
+      "name": "Инопланетная (светлая)",
+      "description": "Светлая тема в фиолетовых оттенках",
+      "cssFile": "assets/themes/alien-light/theme.css",
+      "preview": {
+        "background": "#F1EEF8",
+        "primary": "#5F4B8B",
+        "cell": "#FFFFFF"
+      }
+    }
+  ],
+  "defaultTheme": "anti-kotopark"
+}

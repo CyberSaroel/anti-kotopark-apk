@@ -1,0 +1,401 @@
+/* Anti-Kotopark game screen styles */
+/* Вёрстка: по центру поле с котами, справа статистика */
+.anti-game-stage {
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 20px;
+  max-width: 100%;
+}
+
+/* Статистика справа от поля: точные координаты (left/top) задаёт JS в
+   positionStats(), чтобы игровое поле оставалось строго по центру экрана,
+   а счётчики — справа от него с тем же отступом, что был раньше (20px).
+   На мобильных (<769px) правила main.css/anti-game.css возвращают счётчики
+   в поток (статичная колонка под полем). */
+.anti-game-stage .stats {
+  position: absolute;
+  left: auto;
+  top: auto;
+  right: auto;
+  transform: none;
+  width: auto;
+  min-width: 180px;
+  flex: 0 0 auto;
+  color: #fff;
+}
+
+/* В абсолютной позиции верх счётчиков JS ставит точно по верху игрового поля,
+   поэтому прежний margin-top 12px (выравнивание в потоке) больше не нужен. */
+@media (min-width: 769px) {
+  .anti-game-stage .stats,
+  .anti-game-stage .stats.level10-stats {
+    margin-top: 0;
+  }
+}
+
+/* Панель статистики анти-уровня: компактная колонка */
+.anti-game-stage .level10-stats {
+  grid-template-columns: 1fr;
+  max-width: none;
+  margin: 0;
+  width: auto;
+}
+
+/* Кнопки социотипов (переиспользуем существующие анти-тайп-кнопки) */
+.anti-type-btn {
+  padding: 8px 12px;
+  font-size: 12px;
+  border: 2px solid var(--cell-border);
+  border-radius: 8px;
+  background: #310d1b;
+  color: var(--button-text);
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.anti-type-btn:hover {
+  background: #4a1830;
+  transform: scale(1.02);
+  box-shadow: 0 5px 7px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.anti-type-btn:active {
+  transform: scale(0.98);
+}
+
+/* ===== Всплывающее окно выбора социотипа ===== */
+.socio-modal {
+  /* Без затемнения поля: pointer-events только на карточке,
+     клики вне окна уходят на поле (закрытие — по Escape или повторному тапу). */
+  position: fixed;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.socio-modal[hidden] {
+  display: none;
+}
+
+.socio-modal-card {
+  background: #220f13;
+  border: 2px solid var(--gilt, #d49a3c);
+  border-radius: 14px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.55), 0 0 16px rgba(212, 154, 60, 0.2);
+  /* Компактное окно: ширина подстраивается под контент */
+  width: max-content;
+  min-width: 260px;
+  max-width: calc(100vw - 16px);
+  max-height: min(70vh, 520px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  pointer-events: auto;
+  box-sizing: border-box;
+  position: relative;
+  /* Плавное появление: затухание + лёгкое увеличение 0.9 → 1 за 300 мс */
+  transform-origin: center;
+  will-change: transform, opacity;
+  animation: socio-modal-in 300ms ease-out;
+}
+
+/* Изображения декорации в модальном окне социотипов */
+.socio-modal-decoration-left {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 60px;
+  height: 60px;
+  background-image: url("../assets/socio-modal/left.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: top left;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.socio-modal-decoration-right {
+  position: absolute;
+  top: 0;
+  right: 58px;
+  width: 60px;
+  height: 60px;
+  background-image: url("../assets/socio-modal/right.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: top right;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Закрытие: плавное затухание + уменьшение 1 → 0.9 за 300 мс */
+.socio-modal-card.closing {
+  animation: socio-modal-out 300ms ease-in forwards;
+}
+
+@keyframes socio-modal-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes socio-modal-out {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+}
+
+.socio-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(212, 154, 60, 0.4);
+  flex-shrink: 0;
+}
+
+.socio-modal-title {
+  font-size: 16px;
+  font-weight: bold;
+  color: var(--gilt-highlight, #f3d27a);
+  text-align: center;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.socio-modal-close {
+  width: 36px;
+  height: 36px;
+  min-height: 36px;
+  padding: 0;
+  font-size: 18px;
+  line-height: 1;
+  background: transparent;
+  color: var(--gilt-highlight, #f3d27a);
+  border: 1px solid rgba(212, 154, 60, 0.5);
+  border-radius: 50%;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.socio-modal-close:hover {
+  background: rgba(212, 154, 60, 0.2);
+  transform: rotate(90deg);
+}
+
+/* Сетка типов: 4 столбца × 4 строки (по 4 социотипа в каждом столбце) */
+.socio-modal-list {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  padding: 12px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  min-height: 0;
+  width: min(460px, calc(100vw - 16px));
+  box-sizing: border-box;
+}
+
+/* Все кнопки одной ширины (ячейки сетки 1fr), текст по центру,
+   длинные имена аккуратно переносятся внутри ячейки */
+.socio-modal-list .socio-modal-type-btn {
+  text-align: center;
+  font-size: 13px;
+  padding: 8px 4px;
+  justify-self: stretch;
+  align-self: stretch;
+  white-space: normal;
+  overflow-wrap: break-word;
+  line-height: 1.2;
+  color: #fff;
+}
+
+/* Highlight for type-selected cat */
+.cell.type-selected {
+  box-shadow: 0 0 0 3px rgba(255, 152, 0, 0.8), 0 0 15px rgba(255, 152, 0, 0.5);
+  z-index: 10;
+}
+
+/* Win overlay */
+.win-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.win-content {
+  background: var(--cell-bg);
+  border: 3px solid var(--primary-color);
+  border-radius: 16px;
+  padding: 32px;
+  text-align: center;
+  color: var(--button-text);
+  max-width: 400px;
+}
+
+.win-content h2 {
+  font-size: 28px;
+  margin-bottom: 16px;
+  color: #4caf50;
+}
+
+.win-content p {
+  font-size: 16px;
+  margin: 8px 0;
+}
+
+.win-restart-btn,
+.win-menu-btn {
+  margin-top: 16px;
+  padding: 12px 24px;
+  font-size: 16px;
+  border: 2px solid var(--primary-color);
+  border-radius: 8px;
+  background: var(--button-bg);
+  color: var(--button-text);
+  cursor: pointer;
+  margin: 8px;
+}
+
+.win-restart-btn:hover,
+.win-menu-btn:hover {
+  background: var(--button-hover);
+}
+
+/* Mobile responsive: поле по центру, статистика внизу, модалка на весь экран */
+@media (max-width: 768px) {
+  .anti-game-stage {
+    flex-direction: column;
+    align-items: center;
+    padding: 10px;
+    gap: 10px;
+  }
+  
+  .board-area {
+    order: 1;
+  }
+  
+  .anti-game-stage .stats {
+    order: 2;
+    width: 100%;
+    max-width: 400px;
+  }
+  
+  .socio-modal {
+    padding: 0;
+    align-items: flex-start;
+  }
+  
+  /* На телефоне окно тоже компактное, ширина по контенту */
+  .socio-modal-card {
+    width: max-content;
+    max-width: calc(100vw - 12px);
+    min-width: 0;
+    max-height: min(78vh, 520px);
+  }
+  
+  /* На телефонах список типов перестраивается: 2 колонки × 8 строк */
+  .socio-modal-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+    padding: 10px;
+    width: min(320px, calc(100vw - 12px));
+  }
+
+  .socio-modal-list .socio-modal-type-btn {
+    font-size: 12px;
+    padding: 8px 8px;
+  }
+}
+
+/* ==== Тестовая кнопка для заказчика ====
+   «Открыть типы всех котов» (показывается на уровнях 1–30) —
+   визуально отличается от боевой кнопки рыбок (пунктирная рамка). */
+.test-tool-btn {
+  border: 2px dashed #d49a3c !important;
+  background: linear-gradient(135deg, rgba(94, 22, 56, 0.9) 0%, rgba(42, 10, 20, 0.95) 100%) !important;
+  font-size: 13px !important;
+  min-height: 32px !important;
+}
+
+.test-tool-btn:hover {
+  background: #4a1830 !important;
+}
+
+.test-tool-btn:active {
+  transform: scale(0.98);
+}
+
+/* ==== Чит-код «Aushra» ====
+   Набор «Aushra» на клавиатуре: +1000 рыбок, кнопка «Открыть типы всех котов»
+   появляется с анимацией, на игровом поле всплывает и гаснет надпись
+   «Чит-код активирован». */
+
+/* Анимация появления кнопки после чит-кода */
+.test-tool-btn-appear {
+  animation: cheatBtnAppear 0.5s ease-out;
+}
+
+@keyframes cheatBtnAppear {
+  0%   { opacity: 0; transform: scale(0.6); }
+  60%  { opacity: 1; transform: scale(1.08); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+/* Надпись на игровом поле: появляется и через ~1 секунду исчезает */
+.cheat-code-float {
+  position: fixed;
+  left: 50%;
+  top: 42%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, rgba(212, 154, 60, 0.95) 0%, rgba(243, 210, 122, 0.95) 100%);
+  color: #2a0a14;
+  padding: 14px 28px;
+  border-radius: 14px;
+  font-size: 22px;
+  font-weight: bold;
+  text-align: center;
+  border: 2px solid #f3d27a;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.55);
+  pointer-events: none;
+  z-index: 1001;
+  animation: cheatCodeFloat 1s ease forwards;
+}
+
+@keyframes cheatCodeFloat {
+  0%   { opacity: 0; transform: translateX(-50%) scale(0.7); }
+  20%  { opacity: 1; transform: translateX(-50%) scale(1.06); }
+  30%  { transform: translateX(-50%) scale(1); }
+  75%  { opacity: 1; }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-24px); }
+}

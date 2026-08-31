@@ -1,0 +1,86 @@
+/* Неоновая (светлая) тема — на основе тёмной неоновой, но светлый фон */
+:root {
+  --bg-color: #f0f4ff;
+  --text-color: #00d100;
+  --primary-color: #ff00ff;
+  --primary-hover: #ff00ff;
+  --cell-bg: #e0e8f8;
+--cell-border: #00ffff;
+  --cell-selected: #ff00ff;
+  --cell-target: #00ff00;
+  --water-bg: #b3e5fc;
+  --button-bg: #ffffff;
+  --button-hover: #e8f0ff;
+  --button-text: #00c400;
+  --level-btn-bg: #ffffff;
+  --level-btn-done-bg: #e8f5e9;
+  --level-btn-done-border: #00ff00;
+}
+
+body {
+  background: var(--bg-color);
+  color: var(--text-color);
+}
+
+.cell {
+  background: var(--cell-bg);
+  border-color: var(--cell-border);
+}
+
+.cell.selected {
+  outline-color: var(--cell-selected);
+  box-shadow: 0 0 6px var(--cell-selected);
+}
+
+.cell.target {
+  outline-color: var(--cell-target);
+  box-shadow: 0 0 6px var(--cell-target);
+}
+
+.cell.water {
+  background-color: var(--water-bg);
+}
+
+button {
+  background: var(--button-bg);
+  color: var(--button-text);
+  border-color: var(--primary-color);
+}
+
+button:hover {
+  background: var(--button-hover);
+  box-shadow: 0 0 6px var(--primary-color);
+}
+
+.level-btn {
+  background: var(--level-btn-bg);
+  border-color: var(--primary-color);
+}
+
+.level-btn.done {
+  background: var(--level-btn-done-bg);
+  border-color: var(--level-btn-done-border);
+  box-shadow: 0 0 4px var(--level-btn-done-border);
+}
+
+.skin-btn, .theme-select-btn, .victory-sound-select-btn {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+.skin-btn:hover, .theme-select-btn:hover:not(:disabled), .victory-sound-select-btn:hover:not(:disabled) {
+  background: var(--primary-hover);
+  box-shadow: 0 0 6px var(--primary-hover);
+}
+
+/* Кнопки победы и импичмента */
+.win-btn {
+  background: var(--button-bg);
+  border-color: var(--primary-color);
+  color: var(--button-text);
+}
+.win-btn:hover {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  color: #fff;
+}

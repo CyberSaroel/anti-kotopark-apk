@@ -1,0 +1,79 @@
+/* Классическая тема оформления */
+:root {
+  --bg-color: #eef;
+  --text-color: #333;
+  --primary-color: #6c5ce7;
+  --primary-hover: #5b4cc4;
+  --cell-bg: #ddd;
+  --cell-border: #666;
+  --cell-selected: red;
+  --cell-target: #2a7;
+  --water-bg: #2b7fd4;
+  --button-bg: #fff;
+  --button-hover: #dde;
+  --button-text: #333;
+  --level-btn-bg: #fff;
+  --level-btn-done-bg: #d7f5d7;
+  --level-btn-done-border: #3a3;
+}
+
+body {
+  background: var(--bg-color);
+  color: var(--text-color);
+}
+
+.cell {
+  background: var(--cell-bg);
+  border-color: var(--cell-border);
+}
+
+.cell.selected {
+  outline-color: var(--cell-selected);
+}
+
+.cell.target {
+  outline-color: var(--cell-target);
+}
+
+.cell.water {
+  background-color: var(--water-bg);
+}
+
+button {
+  background: var(--button-bg);
+  color: var(--button-text);
+}
+
+button:hover {
+  background: var(--button-hover);
+}
+
+.level-btn {
+  background: var(--level-btn-bg);
+}
+
+.level-btn.done {
+  background: var(--level-btn-done-bg);
+  border-color: var(--level-btn-done-border);
+}
+
+.skin-btn, .theme-select-btn {
+  background: var(--primary-color);
+  color: white;
+}
+
+.skin-btn:hover, .theme-select-btn:hover:not(:disabled) {
+  background: var(--primary-hover);
+}
+
+/* Кнопки победы и импичмента */
+.win-btn {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  color: #fff;
+}
+.win-btn:hover {
+  background: var(--primary-hover);
+  border-color: var(--primary-hover);
+  color: #fff;
+}

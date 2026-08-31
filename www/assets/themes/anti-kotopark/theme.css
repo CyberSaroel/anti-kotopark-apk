@@ -1,0 +1,130 @@
+/* Соционические коты: Антикотопарк — книжная тема (кожа + золото + пергамент) */
+:root {
+  --bg-color: #f1e6d2;              /* светлый пергаментный фон */
+  --text-color: #2a0a14;            /* тёмные чернила */
+  --primary-color: #d49a3c;         /* золото */
+  --primary-hover: #e8b85a;         /* светлое золото при наведении */
+  --cell-bg: #3d1130;               /* тёмная кожа клеток */
+  --cell-border: #d49a3c;           /* золотая окантовка клеток */
+  --cell-selected: red;              /* красная рамка выбора (как в royal-socio-cats) */
+  --cell-target: #7ac74f;           /* золотисто-зелёная цель (хорошо видна на коже) */
+  --water-bg: #1a3a5c;              /* чернильно-синяя вода */
+  --button-bg: #310d1b;             /* тёмно-красная кожа кнопок */
+  --button-hover: #4a1830;          /* светлее при наведении */
+  --button-text: #f4e6b0;           /* пергаментный текст на коже */
+  --level-btn-bg: #310d1b;          /* тёмно-красная кожа кнопок уровня */
+  --level-btn-done-bg: #2d4a3e;     /* тёмно-изумрудный для пройденных */
+  --level-btn-done-border: #d49a3c; /* золотая рамка пройденного */
+}
+
+body {
+  background: var(--bg-color);
+  color: var(--text-color);
+}
+
+.cell {
+  background: var(--cell-bg);
+  border-color: var(--cell-border);
+  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.35);
+}
+
+.cell.selected {
+  outline-color: var(--cell-selected);
+}
+
+.cell.target {
+  outline-color: var(--cell-target);
+}
+
+.cell.water {
+  background-color: var(--water-bg);
+}
+
+button {
+  background: var(--button-bg);
+  color: var(--button-text);
+  border-color: var(--cell-border);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+}
+
+button:hover {
+  background: var(--button-hover);
+  box-shadow: 0 0 10px rgba(212, 154, 60, 0.45);
+}
+
+.level-btn {
+  background: var(--level-btn-bg);
+}
+
+.level-btn.done {
+  background: var(--level-btn-done-bg);
+  border-color: var(--level-btn-done-border);
+  box-shadow: 0 0 6px rgba(212, 154, 60, 0.5);
+}
+
+/* Золотая подсветка главной кнопки меню поверх кожаной основы */
+.intro-start-btn {
+  background: linear-gradient(180deg, #7a2050 0%, #5e1638 55%, #4a1030 100%);
+  border: 2px solid var(--cell-border);
+  box-shadow:
+    0 4px 14px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(244, 230, 176, 0.25),
+    0 0 12px rgba(212, 154, 60, 0.35);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+.intro-start-btn:hover {
+  background: linear-gradient(180deg, #8c2a60 0%, #6e1a44 55%, #561238 100%);
+}
+
+/* Тонкие золотые «тиснения» на вторичных кнопках меню */
+.intro-music-btn {
+  background: linear-gradient(180deg, #6e1a44 0%, #5e1638 60%, #4a1030 100%);
+  border: 1px solid rgba(212, 154, 60, 0.55);
+  box-shadow:
+    0 3px 10px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(244, 230, 176, 0.18);
+}
+
+.intro-music-btn:hover {
+  background: linear-gradient(180deg, #7a2050 0%, #6e1a44 60%, #561238 100%);
+}
+
+/* Карточки настроек/правил/рекордов в пергаментно-книжном стиле */
+.settings-section,
+.win-stats,
+.victory-sound-card {
+  background: linear-gradient(135deg, rgba(94, 22, 56, 0.55) 0%, rgba(42, 10, 20, 0.65) 100%);
+  border: 1px solid rgba(212, 154, 60, 0.4);
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(244, 230, 176, 0.15);
+}
+
+/* Таблицы рекордов */
+.records-table {
+  background: var(--button-bg);
+  border: 1px solid var(--cell-border);
+}
+
+.records-table th {
+  background: #4a1030;
+  color: var(--text-color);
+}
+
+.records-table td {
+  border-bottom-color: rgba(212, 154, 60, 0.25);
+}
+
+/* Кнопки победы и импичмента */
+.win-btn {
+  background: var(--button-bg);
+  border-color: var(--cell-border);
+  color: var(--button-text);
+}
+
+.win-btn:hover {
+  background: var(--primary-hover);
+  border-color: var(--primary-hover);
+  color: #2a0a14;
+}

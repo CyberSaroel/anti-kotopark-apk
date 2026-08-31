@@ -1,0 +1,154 @@
+/* Cyberpunk 2077 — Светлая тема */
+:root {
+  --bg-color: #F2F0E4;
+  --text-color: #0A0A0F;
+  --primary-color: #FCEE0A;
+  --primary-hover: #0A0A0F;
+  --cell-bg: #FFFFFF;
+  --cell-border: #0A0A0F;
+  --cell-selected: #FCEE0A;
+  --cell-target: #00C2D6;
+  --water-bg: #D4E8EC;
+  --button-bg: #FFFFFF;
+  --button-hover: #FCEE0A;
+  --button-text: #0A0A0F;
+  --level-btn-bg: #FFFFFF;
+  --level-btn-done-bg: #FFF9D6;
+  --level-btn-done-border: #0A0A0F;
+}
+
+body {
+  background: var(--bg-color);
+  color: var(--text-color);
+}
+
+.cell {
+  background: var(--cell-bg);
+  border-color: var(--cell-border);
+}
+
+.cell.selected {
+  outline-color: var(--cell-selected);
+  box-shadow: 0 0 6px var(--cell-selected);
+}
+
+.cell.target {
+  outline-color: var(--cell-target);
+  box-shadow: 0 0 6px var(--cell-target);
+}
+
+.cell.water {
+  background-color: var(--water-bg);
+}
+
+button {
+  background: var(--button-bg) !important;
+  color: var(--button-text) !important;
+  border: 2px solid #FCEE0A !important;
+}
+
+button:hover {
+  background: var(--button-hover) !important;
+  color: #0A0A0F !important;
+}
+
+.level-btn {
+  background: var(--level-btn-bg);
+  border-color: var(--cell-border);
+}
+
+.level-btn.done {
+  background: var(--level-btn-done-bg);
+  border-color: var(--level-btn-done-border);
+}
+
+.skin-btn, .theme-select-btn, .victory-sound-select-btn {
+  background: var(--primary-color);
+  color: #0A0A0F;
+}
+
+.skin-btn:hover, .theme-select-btn:hover:not(:disabled), .victory-sound-select-btn:hover:not(:disabled) {
+  background: var(--primary-hover);
+  color: var(--primary-color);
+}
+
+/* Кнопки победы и импичмента */
+.win-btn {
+  background: var(--button-bg) !important;
+  border: 2px solid #FCEE0A !important;
+  color: var(--button-text) !important;
+}
+.win-btn:hover {
+  background: var(--button-hover) !important;
+  border-color: #FCEE0A !important;
+  color: #0A0A0F !important;
+}
+
+/* Кнопка «Начать игру» — полностью жёлтая, без рамки */
+.intro-start-btn {
+  background: #FCEE0A !important;
+  border: none !important;
+  color: #0A0A0F !important;
+}
+.intro-start-btn:hover {
+  background: #E6D400 !important;
+  color: #0A0A0F !important;
+}
+
+/* Кнопка «Назад» — жёлтая обводка вместо заливки */
+.back-btn {
+  background: var(--button-bg) !important;
+  border: 2px solid #FCEE0A !important;
+  color: var(--button-text) !important;
+}
+.back-btn:hover {
+  background: var(--button-hover) !important;
+  color: #0A0A0F !important;
+}
+
+/* Счётчики на игровом экране — жёлтая обводка, тёмный текст */
+.stat-item {
+  border: 2px solid #FCEE0A !important;
+  border-radius: 8px;
+  padding: 8px 12px;
+  color: #0A0A0F;
+}
+
+/* Mobile: remove heavy glow shadows for low-end GPUs */
+@media (max-width: 768px) {
+  .cell {
+    box-shadow: none;
+  }
+
+  .cell.water {
+    box-shadow: none;
+  }
+
+  .cell.selected {
+    box-shadow: 0 0 4px var(--cell-selected);
+  }
+
+  .cell.target {
+    box-shadow: 0 0 4px var(--cell-target);
+  }
+
+  button {
+    box-shadow: none;
+  }
+
+  button:hover {
+    box-shadow: none;
+  }
+
+  .level-btn.done {
+    box-shadow: none;
+  }
+
+  .skin-btn, .theme-select-btn, .victory-sound-select-btn {
+    box-shadow: none;
+  }
+
+  .skin-btn:hover, .theme-select-btn:hover:not(:disabled), .victory-sound-select-btn:hover:not(:disabled) {
+    box-shadow: none;
+  }
+}

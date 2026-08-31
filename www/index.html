@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light">
+  <meta name="theme-color" content="#0a0a0a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="mobile-web-app-capable" content="yes">
+  <title>Анти Котопарк</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🐱%3C/text%3E%3C/svg%3E">
+  <script>
+    // Устанавливаем тему ДО отрисовки, чтобы не было вспышки не той темы.
+    // Первый запуск (localStorage пуст) → светлая тема «Королевский Котопарк».
+    (function () {
+      try {
+        var t = localStorage.getItem('ak_theme') || 'light';
+        document.documentElement.setAttribute('data-theme', t);
+      } catch (e) {
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+    })();
+  </script>
+  <link rel="stylesheet" href="vendor/bootstrap/bootstrap-grid.min.css?v=1.2.0">
+  <link rel="stylesheet" href="vendor/bootstrap/bootstrap-utilities.min.css?v=1.2.0">
+  <link rel="stylesheet" href="css/main.css?v=1.2.0">
+  <link rel="stylesheet" href="css/menu.css?v=1.2.0">
+  <link rel="stylesheet" href="css/board.css?v=1.2.0">
+  <link rel="stylesheet" href="css/cats.css?v=1.2.0">
+  <link rel="stylesheet" href="css/anti-game.css?v=1.2.0">
+  <link rel="stylesheet" href="css/level.css?v=1.2.0">
+  <link rel="stylesheet" href="css/mobile.css?v=1.2.0">
+  <link id="theme-link" rel="stylesheet" href="css/themes.css?v=1.2.0">
+</head>
+<body>
+  <div id="app"></div>
+  <footer id="footer" class="credits-footer">
+  <h3><span class="heart">❤️</span> Благодарности <span class="heart">❤️</span></h3>
+  <p><strong>Автор игры:</strong> Саро Багманян (CyberSaroel)</p>
+  <p>Код игры написан полностью с нуля.</p>
+  <p>Автор оригинальной версии игры: Андрей Бобин. Его нынешнее местонахождение неизвестно.</p>
+  <p>100-й уровень посвящён Андрею Бобину и воспроизводит финальный уровень оригинальной игры.</p>
+  <p>Идея сиквела и постановка технического задания: Ярослав Полозов.</p>
+</footer>
+  <script type="module" src="js/app.js?v=1.2.0"></script>
+</body>
+</html>

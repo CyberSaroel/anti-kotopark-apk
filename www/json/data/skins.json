@@ -1,0 +1,26 @@
+{
+  "skins": [
+    {
+      "id": "classic",
+      "name": "Классический",
+      "description": "Оригинальный стиль игры",
+      "path": "assets/cats/classic/mood_{mood}.png",
+      "preview": "assets/cats/classic/mood_0.png"
+    },
+    {
+      "id": "custom1",
+      "name": "Скин 1 (пользовательский)",
+      "description": "Добавьте свои изображения в assets/cats/custom1/",
+      "path": "assets/cats/custom1/mood_{mood}.png",
+      "preview": "assets/cats/custom1/mood_0.png"
+    },
+    {
+      "id": "custom2",
+      "name": "Скин 2 (пользовательский)",
+      "description": "Добавьте свои изображения в assets/cats/custom2/",
+      "path": "assets/cats/custom2/mood_{mood}.png",
+      "preview": "assets/cats/custom2/mood_0.png"
+    }
+  ],
+  "defaultSkin": "classic"
+}

@@ -1,0 +1,531 @@
+/* ===== Королевский Котопарк — книжная тема (кожа + золото + пергамент) =====
+ * Перенесено ИЗ royal-socio-cats/css/theme-royal.css — палитра источника 1:1.
+ * ПАЛ ИСТОЧНИКА (СВЕТЛАЯ): фонарь #f1e6d2, чернила #2a0a14.
+ * Игровые цвета наследуются из :root (кожа, золото, пергамент).
+ * Тёмную схему [data-theme="dark"] НЕ трогаем (сохранена как раньше).
+ */
+
+/* ===== Книжные цвета (общие) ===== */
+:root {
+  --leather: #5e1638;
+  --leather-top: #8a2350;
+  --leather-bot: #3a0d24;
+  --gilt: #d49a3c;
+  --gilt-highlight: #f3d27a;
+  --parchment: #f4e6b0;
+  --ink: #2a0a14;
+  --font-book: Arial, Helvetica, sans-serif;
+}
+
+/* ==== Тёмная (по умолчанию) ==== */
+:root,
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg-color: #0a0a14;              /* тёмный бархатный фон */
+  --text-color: #f4e6b0;            /* пергаментный текст */
+  --primary-color: #d49a3c;         /* золото */
+  --primary-hover: #e8b85a;         /* светлое золото */
+
+  --cell-bg: #3d1130;               /* тёмная кожа клеток */
+  --cell-border: #d49a3c;           /* золотая окантовка */
+  --cell-selected: red;              /* красная рамка выбора (как в royal-socio-cats) */
+  --cell-target: #7ac74f;           /* золотисто-зелёная цель */
+  --water-bg: #1a3a5c;              /* чернильно-синяя вода */
+
+  --button-bg: #5e1638;             /* кожа кнопок */
+  --button-hover: #7a2050;
+  --button-text: #f4e6b0;
+
+  --level-btn-bg: #5e1638;
+  --level-btn-done-bg: #2d4a3e;
+  --level-btn-done-border: #d49a3c;
+}
+
+/* ==== Светлая (из royal-socio-cats = бежевый фон + тёмные чернила) ==== */
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  /* ЕДИНСТВЕННОЕ изменение фона — тёплый бежевый/пергаментный (источник) */
+  --bg-color: #f1e6d2;
+
+  /* Текст на голом фоне — тёмные чернила (источник) */
+  --text-color: #2a0a14;
+}
+
+/* ===== Применяем шрифт Arial ===== */
+body {
+  font-family: var(--font-book), Helvetica, sans-serif;
+}
+
+h1, h2, h3, .topbar-title, .intro-title, .win-stat-value {
+  font-family: var(--font-book), Helvetica, sans-serif;
+}
+
+/* ===== Общие книжные стили (работают в обеих схемах) ===== */
+body {
+  background: var(--bg-color);
+  color: var(--text-color);
+  transition: background-color 0.35s ease, color 0.35s ease;
+}
+
+#app {
+  transition: background-color 0.35s ease, color 0.35s ease;
+}
+
+.cell {
+  background: var(--cell-bg);
+  border-color: var(--cell-border);
+  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.2);
+}
+
+.cell.selected {
+  outline-color: var(--cell-selected);
+}
+
+.cell.target {
+  outline-color: var(--cell-target);
+}
+
+.cell.water {
+  background-color: var(--water-bg);
+}
+
+button {
+  background: linear-gradient(180deg, #4a1830 0%, #310d1b 50%, #250a12 100%);
+  color: var(--button-text);
+  border: 2px solid #1a080d;
+  border-radius: 8px;
+  box-shadow:
+    0 4px 8px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+button:hover {
+  background: linear-gradient(180deg, #5a2240 0%, #4a1830 50%, #310d1b 100%);
+  box-shadow:
+    0 6px 12px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+}
+
+button:active {
+  background: linear-gradient(180deg, #250a12 0%, #310d1b 50%, #4a1830 100%);
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(0, 0, 0, 0.3),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.1);
+  transform: translateY(1px);
+}
+
+.level-btn {
+  background: linear-gradient(180deg, #4a1830 0%, #310d1b 50%, #250a12 100%);
+  border: 2px solid #1a080d;
+  box-shadow:
+    0 4px 8px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.level-btn:hover {
+  background: linear-gradient(180deg, #5a2240 0%, #4a1830 50%, #310d1b 100%);
+  box-shadow:
+    0 6px 12px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+}
+
+.level-btn:active {
+  background: linear-gradient(180deg, #250a12 0%, #310d1b 50%, #4a1830 100%);
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(0, 0, 0, 0.3),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.1);
+  transform: translateY(1px);
+}
+
+.level-btn.done {
+  background: var(--level-btn-done-bg);
+  border-color: var(--level-btn-done-border);
+}
+
+/* ===== Кожаная главная кнопка «Играть» с золотой рамкой ===== */
+.intro-start-btn {
+  background: linear-gradient(180deg, #5a2240 0%, #310d1b 50%, #1a080d 100%);
+  border: 3px solid var(--gilt);
+  border-radius: 12px;
+  box-shadow:
+    0 8px 16px rgba(0, 0, 0, 0.5),
+    inset 0 2px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.4),
+    0 0 20px rgba(212, 154, 60, 0.4);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
+}
+
+.intro-start-btn:hover {
+  background: linear-gradient(180deg, #6a2c50 0%, #4a1830 50%, #250a12 100%);
+  box-shadow:
+    0 10px 20px rgba(0, 0, 0, 0.6),
+    inset 0 2px 0 rgba(255, 255, 255, 0.25),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.4),
+    0 0 25px rgba(212, 154, 60, 0.5);
+  transform: translateY(-2px);
+}
+
+.intro-start-btn:active {
+  background: linear-gradient(180deg, #1a080d 0%, #310d1b 50%, #5a2240 100%);
+  box-shadow:
+    0 4px 8px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(0, 0, 0, 0.4),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.1),
+    0 0 15px rgba(212, 154, 60, 0.3);
+  transform: translateY(1px);
+}
+
+/* ===== Тиснение на вторичных кнопках меню ===== */
+.intro-music-btn {
+  background: linear-gradient(180deg, #4a1830 0%, #310d1b 50%, #250a12 100%);
+  border: 2px solid rgba(212, 154, 60, 0.6);
+  color: var(--parchment);
+  box-shadow:
+    0 4px 8px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.intro-music-btn:hover {
+  background: linear-gradient(180deg, #5a2240 0%, #4a1830 50%, #310d1b 100%);
+  box-shadow:
+    0 6px 12px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+}
+
+.intro-music-btn:active {
+  background: linear-gradient(180deg, #250a12 0%, #310d1b 50%, #4a1830 100%);
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(0, 0, 0, 0.3),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.1);
+  transform: translateY(1px);
+}
+
+/* ===== Карточки в пергаментно-книжном стиле ===== */
+.settings-section,
+.win-stats,
+.victory-sound-card {
+  background: linear-gradient(135deg, rgba(94, 22, 56, 0.55) 0%, rgba(42, 10, 20, 0.65) 100%);
+  border: 1px solid rgba(212, 154, 60, 0.4);
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(244, 230, 176, 0.15);
+}
+
+.settings-section h2,
+.settings-section p,
+.settings-option label,
+.victory-sound-name,
+.victory-sound-desc {
+  color: var(--parchment);
+}
+
+.victory-sound-desc {
+  opacity: 0.75;
+}
+
+/* ===== Таблицы рекордов ===== */
+.records-table {
+  background: #220f13;
+  border: 1px solid var(--cell-border);
+  color: var(--parchment);
+}
+
+.records-table th {
+  background: #220f13;
+  color: var(--parchment);
+}
+
+.records-table td {
+  border-bottom-color: rgba(212, 154, 60, 0.25);
+}
+
+.records-table td[colspan] {
+  background: #310d1b;
+}
+
+/* ===== Кнопки победы / импичмента ===== */
+.win-btn {
+  background: linear-gradient(180deg, #4a1830 0%, #310d1b 50%, #250a12 100%);
+  border: 2px solid #1a080d;
+  color: var(--button-text);
+  box-shadow:
+    0 4px 8px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.win-btn:hover {
+  background: linear-gradient(180deg, #5a2240 0%, #4a1830 50%, #310d1b 100%);
+  border-color: #4a1830;
+  color: var(--ink);
+  box-shadow:
+    0 6px 12px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+}
+
+.win-btn:active {
+  background: linear-gradient(180deg, #250a12 0%, #310d1b 50%, #4a1830 100%);
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(0, 0, 0, 0.3),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.1);
+  transform: translateY(1px);
+}
+
+/* ===== Кнопки меню (выбор темы, скины, звук победы) в книжном стиле ===== */
+.skin-btn,
+.theme-select-btn,
+.victory-sound-select-btn,
+.settings-btn,
+.back-btn {
+  background: linear-gradient(180deg, #4a1830 0%, #310d1b 50%, #250a12 100%);
+  border: 2px solid rgba(212, 154, 60, 0.6);
+  color: var(--parchment);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  box-shadow:
+    0 4px 8px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+}
+
+.skin-btn:hover,
+.theme-select-btn:hover:not(:disabled),
+.victory-sound-select-btn:hover:not(:disabled),
+.settings-btn:hover,
+.back-btn:hover {
+  background: linear-gradient(180deg, #5a2240 0%, #4a1830 50%, #310d1b 100%);
+  box-shadow:
+    0 6px 12px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.3),
+    0 0 10px rgba(212, 154, 60, 0.45);
+}
+
+.skin-btn:active,
+.theme-select-btn:active:not(:disabled),
+.victory-sound-select-btn:active:not(:disabled),
+.settings-btn:active,
+.back-btn:active {
+  background: linear-gradient(180deg, #250a12 0%, #310d1b 50%, #4a1830 100%);
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(0, 0, 0, 0.3),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.1);
+  transform: translateY(1px);
+}
+
+.skin-btn:disabled,
+.theme-select-btn:disabled,
+.victory-sound-select-btn:disabled {
+  background: #3a3a44;
+  border-color: rgba(212, 154, 60, 0.3);
+  color: rgba(244, 230, 176, 0.5);
+  text-shadow: none;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+/* ===== Стат-панели HUD в книжном стиле ===== */
+.stat-item {
+  background: #310d1b;
+  border-color: #d49a3c;
+  color: var(--parchment);
+  box-shadow: inset 0 1px 0 rgba(244, 230, 176, 0.12);
+}
+
+/* ===== Карточки скинов и тем (тёмные в обеих схемах) ===== */
+.skin-card,
+.theme-card {
+  background: linear-gradient(135deg, rgba(94, 22, 56, 0.4) 0%, rgba(42, 10, 20, 0.5) 100%);
+  border: 1px solid rgba(212, 154, 60, 0.35);
+}
+
+.skin-card:hover,
+.theme-card:hover {
+  border-color: var(--gilt);
+  box-shadow: 0 4px 12px rgba(212, 154, 60, 0.3);
+}
+
+.skin-card.selected,
+.theme-card.selected {
+  border-color: var(--gilt-highlight);
+  background: linear-gradient(135deg, rgba(139, 35, 80, 0.5) 0%, rgba(42, 10, 20, 0.6) 100%);
+  box-shadow: 0 0 12px rgba(212, 154, 60, 0.35);
+}
+
+.skin-name,
+.theme-name {
+  color: var(--parchment);
+}
+
+.skin-desc,
+.theme-desc {
+  color: rgba(244, 230, 176, 0.7);
+}
+
+/* ===== Кнопки меню уровня (тема, звук победы, рекорды) в книжном стиле ===== */
+.theme-btn,
+.victory-sound-btn,
+.records-btn {
+  background: linear-gradient(180deg, #4a1830 0%, #310d1b 50%, #250a12 100%);
+  border: 2px solid rgba(212, 154, 60, 0.6);
+  color: var(--parchment);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  box-shadow:
+    0 4px 8px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+}
+
+.theme-btn:hover,
+.victory-sound-btn:hover,
+.records-btn:hover {
+  background: linear-gradient(180deg, #5a2240 0%, #4a1830 50%, #310d1b 100%);
+  box-shadow:
+    0 6px 12px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.3),
+    0 0 10px rgba(212, 154, 60, 0.45);
+}
+
+.theme-btn:active,
+.victory-sound-btn:active,
+.records-btn:active {
+  background: linear-gradient(180deg, #250a12 0%, #310d1b 50%, #4a1830 100%);
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(0, 0, 0, 0.3),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.1);
+  transform: translateY(1px);
+}
+
+/* ===== Номера ходов в кнопках уровня ===== */
+.level-moves {
+  color: rgba(244, 230, 176, 0.65);
+}
+
+/* ===== Кнопки «назад» и прочие вспомогательные ===== */
+.victory-sound-preview-btn {
+  background: linear-gradient(180deg, #3a0f1a 0%, #250a12 50%, #1a080d 100%);
+  border: 2px solid rgba(212, 154, 60, 0.5);
+  color: var(--parchment);
+  box-shadow:
+    0 3px 6px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.victory-sound-preview-btn:hover {
+  background: linear-gradient(180deg, #4a1830 0%, #310d1b 50%, #250a12 100%);
+  box-shadow:
+    0 5px 8px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+}
+
+.victory-sound-preview-btn:active {
+  background: linear-gradient(180deg, #1a080d 0%, #250a12 50%, #310d1b 100%);
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(0, 0, 0, 0.3),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.1);
+  transform: translateY(1px);
+}
+
+/* ===== Лейблы громкости в меню (пергаментный текст) ===== */
+#intro-screen .intro-music-btn label {
+  color: var(--parchment) !important;
+}
+
+/* ===== Тема по умолчанию = СВЕТЛАЯ =====
+ * Страховка от вспышки не той темы:
+ * голый :root (без атрибута) = светлая палитра источника. */
+:root {
+  --bg-color: #f1e6d2;
+  --text-color: #2a0a14;
+}
+
+:root[data-theme="dark"] {
+  --bg-color: #0a0a14;
+  --text-color: #f4e6b0;
+}
+
+/* ===== Плавный переход темы (фон/текст) ===== */
+body,
+#app {
+  transition: background-color 0.35s ease, color 0.35s ease;
+}
+
+/* ===== Кнопка переключения темы ===== */
+.theme-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.theme-toggle-swatch {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1px solid var(--gilt);
+  box-shadow: 0 0 4px rgba(212, 154, 60, 0.5);
+  transition: background-color 0.35s ease, box-shadow 0.35s ease;
+  flex-shrink: 0;
+}
+
+.theme-toggle-icon {
+  font-size: 16px;
+  line-height: 1;
+  transition: transform 0.35s ease, opacity 0.35s ease;
+  flex-shrink: 0;
+}
+
+.theme-toggle-text {
+  font-size: 16px;
+}
+
+.theme-toggle-btn:hover .theme-toggle-swatch {
+  box-shadow: 0 0 8px rgba(212, 154, 60, 0.8);
+}
+
+.theme-toggle-btn:hover .theme-toggle-icon {
+  transform: scale(1.15);
+}
+
+.theme-toggle-btn:active .theme-toggle-icon {
+  transform: scale(0.9);
+}
+
+.theme-toggle-btn:focus-visible {
+  outline: 2px solid var(--gilt-highlight);
+  outline-offset: 2px;
+}
+
+.theme-toggle-btn.theme-toggle-flip .theme-toggle-swatch {
+  animation: themeSwatchFlip 0.35s ease;
+}
+
+@keyframes themeSwatchFlip {
+  0%   { transform: scale(1) rotate(0deg); }
+  40%  { transform: scale(1.3) rotate(180deg); opacity: 0.6; }
+  100% { transform: scale(1) rotate(360deg); }
+}

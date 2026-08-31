@@ -1,0 +1,404 @@
+/* Вампирская тема — готический чёрно-красный стиль */
+
+:root {
+  --bg-color: #000000;
+  --text-color: #e8e8e8;
+  --primary-color: #cc0000;
+  --primary-hover: #ff1a1a;
+  --cell-bg: #111111;
+  --cell-border: #660000;
+  --cell-selected: #ff0000;
+  --cell-target: #990000;
+  --water-bg: #1a0000;
+  --button-bg: #0d0d0d;
+  --button-hover: #1f0000;
+  --button-text: #f0f0f0;
+  --level-btn-bg: #111111;
+  --level-btn-done-bg: #2a0000;
+  --level-btn-done-border: #cc0000;
+  --gothic-serif: Arial, Helvetica, sans-serif;
+  --gothic-text: Arial, Helvetica, sans-serif;
+}
+
+body {
+  font-family: var(--gothic-text);
+  background:
+    radial-gradient(ellipse at 50% -10%, rgba(120, 0, 0, 0.28) 0%, transparent 55%),
+    radial-gradient(ellipse at 10% 100%, rgba(60, 0, 0, 0.22) 0%, transparent 45%),
+    radial-gradient(ellipse at 90% 80%, rgba(40, 0, 0, 0.18) 0%, transparent 40%),
+    linear-gradient(180deg, #000000 0%, #060000 45%, #000000 100%);
+  color: var(--text-color);
+}
+
+h1,
+h2,
+button,
+.win-title,
+.impeachment-title,
+.intro-start-btn,
+.theme-name,
+.skin-name,
+.victory-sound-name,
+.win-stat-label,
+.win-stat-badge {
+  font-family: var(--gothic-serif);
+}
+
+h1 {
+  color: #d4aaaa;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-shadow: 0 0 18px rgba(204, 0, 0, 0.45);
+}
+
+.cell {
+  background: var(--cell-bg);
+  border-color: var(--cell-border);
+  border-width: 1px;
+  border-radius: 8px;
+  box-shadow:
+    inset 0 0 12px rgba(0, 0, 0, 0.6),
+    0 2px 8px rgba(0, 0, 0, 0.45);
+}
+
+.cell.selected::after {
+  border-color: var(--cell-selected);
+  border-radius: 10px;
+  box-shadow: 0 0 14px rgba(255, 0, 0, 0.4);
+}
+
+.cell.target::before {
+  border-color: var(--cell-target);
+  border-radius: 10px;
+}
+
+.cell.water {
+  background-color: var(--water-bg);
+  border-color: #440000;
+}
+
+.cell[data-mood="-2"] .label,
+.cell[data-mood="-1"] .label {
+  color: #ff4444;
+  font-style: italic;
+}
+
+.cell[data-mood="0"] .label {
+  color: #888888;
+}
+
+.cell[data-mood="1"] .label,
+.cell[data-mood="2"] .label {
+  color: #ff6666;
+}
+
+button {
+  background: linear-gradient(180deg, #1a0000 0%, #0a0a0a 100%);
+  color: var(--button-text);
+  border: 1px solid var(--primary-color);
+  border-radius: 8px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  box-shadow:
+    0 4px 14px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 80, 80, 0.12);
+  transition: background 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+button:hover {
+  background: linear-gradient(180deg, #330000 0%, #140000 100%);
+  border-color: var(--primary-hover);
+  color: #ffffff;
+  box-shadow:
+    0 6px 18px rgba(204, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 100, 100, 0.18);
+}
+
+button:disabled {
+  opacity: 0.4;
+  border-color: #440000;
+  box-shadow: none;
+}
+
+.level-btn {
+  background: linear-gradient(180deg, #161616 0%, #0c0c0c 100%);
+  border: 1px solid #550000;
+  color: #d8c8c8;
+  border-radius: 10px;
+}
+
+.level-btn:hover {
+  background: linear-gradient(180deg, #220000 0%, #110000 100%);
+  border-color: var(--primary-color);
+}
+
+.level-btn.done {
+  background: linear-gradient(180deg, #2a0000 0%, #180000 100%);
+  border-color: var(--level-btn-done-border);
+  color: #ffcccc;
+  box-shadow: 0 0 10px rgba(204, 0, 0, 0.2);
+}
+
+.level-btn.done::after {
+  color: #cc0000;
+}
+
+.level-moves {
+  color: #996666;
+  font-style: italic;
+}
+
+.menu-buttons .theme-btn,
+.menu-buttons .victory-sound-btn,
+.menu-buttons .records-btn,
+.skin-btn,
+.theme-select-btn,
+.victory-sound-select-btn,
+.skin-select-btn {
+  background: linear-gradient(180deg, #990000 0%, #660000 100%);
+  color: #f8e8e8;
+  border: 1px solid #cc4444;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+}
+
+.menu-buttons .theme-btn:hover,
+.menu-buttons .victory-sound-btn:hover,
+.menu-buttons .records-btn:hover,
+.skin-btn:hover,
+.theme-select-btn:hover:not(:disabled),
+.victory-sound-select-btn:hover:not(:disabled),
+.skin-select-btn:hover:not(:disabled) {
+  background: linear-gradient(180deg, #bb0000 0%, #880000 100%);
+  border-color: #ff6666;
+}
+
+.theme-card,
+.skin-card,
+.victory-sound-card {
+  background:
+    linear-gradient(160deg, rgba(25, 0, 0, 0.88) 0%, rgba(8, 8, 8, 0.95) 100%);
+  border: 1px solid #550000;
+  border-radius: 14px;
+  color: var(--text-color);
+  box-shadow:
+    0 8px 28px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 120, 120, 0.08);
+}
+
+.theme-card:hover,
+.skin-card:hover,
+.victory-sound-card:hover {
+  border-color: var(--primary-color);
+  box-shadow:
+    0 10px 32px rgba(204, 0, 0, 0.22),
+    inset 0 1px 0 rgba(255, 140, 140, 0.12);
+}
+
+.theme-card.selected,
+.skin-card.selected,
+.victory-sound-card.selected {
+  border-color: var(--primary-color);
+  background:
+    linear-gradient(160deg, rgba(55, 0, 0, 0.82) 0%, rgba(12, 0, 0, 0.94) 100%);
+  box-shadow:
+    0 0 24px rgba(204, 0, 0, 0.28),
+    inset 0 0 20px rgba(80, 0, 0, 0.25);
+}
+
+.theme-name,
+.skin-name,
+.victory-sound-name {
+  color: #e8cccc;
+  letter-spacing: 0.05em;
+}
+
+.theme-desc,
+.skin-desc,
+.victory-sound-desc {
+  color: #9a7a7a;
+  font-style: italic;
+}
+
+.theme-select-btn:disabled,
+.skin-select-btn:disabled,
+.victory-sound-select-btn:disabled {
+  background: #2a1515;
+  border-color: #442222;
+  color: #665555;
+}
+
+.victory-sound-preview-btn {
+  background: linear-gradient(180deg, #330000 0%, #1a0000 100%);
+  border: 1px solid #770000;
+  color: #e8cccc;
+  font-family: var(--gothic-serif);
+}
+
+.victory-sound-preview-btn:hover {
+  background: linear-gradient(180deg, #550000 0%, #330000 100%);
+  border-color: #cc0000;
+}
+
+.back-btn {
+  background: linear-gradient(180deg, #1a1a1a 0%, #0d0d0d 100%);
+  border: 1px solid #550000;
+  color: #d8c8c8;
+}
+
+.back-btn:hover {
+  background: linear-gradient(180deg, #2a0000 0%, #140000 100%);
+  border-color: var(--primary-color);
+}
+
+.stat-item {
+  background: linear-gradient(180deg, #141414 0%, #0a0a0a 100%);
+  border: 1px solid #550000;
+  color: #e8cccc;
+  border-radius: 10px;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.4);
+}
+
+#message {
+  color: #cc3333;
+  font-style: italic;
+}
+
+.records-table {
+  background: #0e0e0e;
+  border: 1px solid #550000;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.records-table th {
+  background: linear-gradient(180deg, #770000 0%, #440000 100%);
+  color: #f0e0e0;
+  font-family: var(--gothic-serif);
+  letter-spacing: 0.05em;
+}
+
+.records-table th,
+.records-table td {
+  border-bottom-color: #2a1010;
+  color: #ddd0d0;
+}
+
+.records-table tr:hover {
+  background: rgba(60, 0, 0, 0.35);
+}
+
+.music-toggle-btn,
+.mobile-audio-btn {
+  background: linear-gradient(180deg, #1a0000 0%, #0d0d0d 100%);
+  border: 1px solid var(--primary-color);
+  color: #e8cccc;
+  border-radius: 10px;
+}
+
+.music-toggle-btn:hover,
+.mobile-audio-btn:hover {
+  background: linear-gradient(180deg, #330000 0%, #1a0000 100%);
+}
+
+.mobile-audio-bar {
+  background: linear-gradient(160deg, rgba(30, 0, 0, 0.92) 0%, rgba(8, 8, 8, 0.96) 100%);
+  border: 1px solid #660000;
+  border-radius: 14px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.55);
+}
+
+.win-stats {
+  border: 1px solid rgba(170, 0, 0, 0.45);
+  border-radius: 16px;
+  background:
+    linear-gradient(160deg, rgba(35, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.72) 100%);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.win-title {
+  font-family: var(--gothic-serif);
+  letter-spacing: 0.06em;
+  text-shadow: 0 0 20px rgba(204, 0, 0, 0.35);
+}
+
+.win-stat-value {
+  font-family: var(--gothic-serif);
+}
+
+.win-stat-badge {
+  background: linear-gradient(180deg, #aa0000 0%, #770000 100%);
+  color: #f8f0f0;
+  border-radius: 999px;
+}
+
+.win-btn {
+  background: linear-gradient(180deg, #1a0000 0%, #0d0d0d 100%) !important;
+  border-color: var(--primary-color) !important;
+  color: #d8a0a0 !important;
+  font-family: var(--gothic-serif) !important;
+}
+
+.win-btn:hover {
+  background: linear-gradient(180deg, #990000 0%, #660000 100%) !important;
+  color: #ffffff !important;
+}
+
+.impeachment-title {
+  color: #cc0000;
+  font-family: Arial, Helvetica, sans-serif;
+  letter-spacing: 0.1em;
+  text-shadow:
+    0 0 20px rgba(255, 0, 0, 0.45),
+    0 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.impeachment-video-wrap {
+  border: 1px solid #660000;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+}
+
+.intro-start-btn {
+  background: linear-gradient(180deg, #990000 0%, #660000 100%);
+  border: 1px solid #cc4444;
+  color: #f8f0f0;
+  letter-spacing: 0.08em;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
+}
+
+.intro-start-btn:hover {
+  background: linear-gradient(180deg, #bb0000 0%, #880000 100%);
+}
+
+.intro-music-btn {
+  background: linear-gradient(180deg, #141414 0%, #080808 100%);
+  border: 1px solid #550000;
+  color: #d8c8c8;
+}
+
+.intro-music-btn:hover {
+  background: linear-gradient(180deg, #220000 0%, #110000 100%);
+  border-color: var(--primary-color);
+}
+
+.result-collapse-btn {
+  background: linear-gradient(180deg, #1a0000 0%, #0d0d0d 100%);
+  color: #e8cccc;
+  border-color: var(--primary-color);
+}
+
+.result-collapse-btn:hover {
+  background: linear-gradient(180deg, #330000 0%, #140000 100%);
+  border-color: var(--primary-hover);
+}
+
+#footer {
+  color: #7a5a5a;
+  font-style: italic;
+}
+
+#footer strong {
+  color: #aa5555;
+  font-family: var(--gothic-serif);
+  font-style: normal;
+}

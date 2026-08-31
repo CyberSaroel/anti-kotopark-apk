@@ -1,0 +1,79 @@
+/* Шоколадная тема оформления */
+:root {
+  --bg-color: #3d2314;
+  --text-color: #f5e6d3;
+  --primary-color: #8b4513;
+  --primary-hover: #a0522d;
+  --cell-bg: #5c3a21;
+  --cell-border: #2d1810;
+  --cell-selected: #d2691e;
+  --cell-target: #9acd32;
+  --water-bg: #4a2c17;
+  --button-bg: #8b4513;
+  --button-hover: #a0522d;
+  --button-text: #f5e6d3;
+  --level-btn-bg: #5c3a21;
+  --level-btn-done-bg: #6b8e23;
+  --level-btn-done-border: #9acd32;
+}
+
+body {
+  background: var(--bg-color);
+  color: var(--text-color);
+}
+
+.cell {
+  background: var(--cell-bg);
+  border-color: var(--cell-border);
+}
+
+.cell.selected {
+  outline-color: var(--cell-selected);
+}
+
+.cell.target {
+  outline-color: var(--cell-target);
+}
+
+.cell.water {
+  background-color: var(--water-bg);
+}
+
+button {
+  background: var(--button-bg);
+  color: var(--button-text);
+}
+
+button:hover {
+  background: var(--button-hover);
+}
+
+.level-btn {
+  background: var(--level-btn-bg);
+}
+
+.level-btn.done {
+  background: var(--level-btn-done-bg);
+  border-color: var(--level-btn-done-border);
+}
+
+.skin-btn, .theme-select-btn {
+  background: var(--primary-color);
+  color: white;
+}
+
+.skin-btn:hover, .theme-select-btn:hover:not(:disabled) {
+  background: var(--primary-hover);
+}
+
+/* Кнопки победы и импичмента */
+.win-btn {
+  background: var(--button-hover);
+  border-color: var(--level-btn-done-border);
+  color: var(--button-text);
+}
+.win-btn:hover {
+  background: var(--level-btn-done-border);
+  border-color: var(--level-btn-done-border);
+  color: #3d2314;
+}

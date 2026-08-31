@@ -1,0 +1,134 @@
+/* Инопланетная тема — Тёмная */
+:root {
+  --bg-color: #13101E;
+  --text-color: #E8E3F4;
+  --primary-color: #6C5AA6;
+  --primary-hover: #6C5AA6;
+  --cell-bg: #211B36;
+  --cell-border: #6C5AA6;
+  --cell-selected: #6C5AA6;
+  --cell-target: #9486C4;
+  --water-bg: #13101E;
+  --button-bg: #211B36;
+  --button-hover: #302750;
+  --button-text: #E8E3F4;
+  --level-btn-bg: #211B36;
+  --level-btn-done-bg: #1E1630;
+  --level-btn-done-border: #9486C4;
+}
+
+body {
+  background: var(--bg-color);
+  color: var(--text-color);
+  text-shadow: 0 0 5px currentColor;
+}
+
+.cell {
+  background: var(--cell-bg);
+  border-color: var(--cell-border);
+  box-shadow: 0 0 5px var(--cell-border);
+}
+
+.cell.selected {
+  outline-color: var(--cell-selected);
+  box-shadow: 0 0 10px var(--cell-selected);
+}
+
+.cell.target {
+  outline-color: var(--cell-target);
+  box-shadow: 0 0 10px var(--cell-target);
+}
+
+.cell.water {
+  background-color: var(--water-bg);
+  box-shadow: 0 0 5px var(--water-bg);
+}
+
+button {
+  background: var(--button-bg);
+  color: var(--button-text);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 5px var(--primary-color);
+}
+
+button:hover {
+  background: var(--button-hover);
+  box-shadow: 0 0 10px var(--primary-color);
+}
+
+.level-btn {
+  background: var(--level-btn-bg);
+  border-color: var(--primary-color);
+}
+
+.level-btn.done {
+  background: var(--level-btn-done-bg);
+  border-color: var(--level-btn-done-border);
+  box-shadow: 0 0 5px var(--level-btn-done-border);
+}
+
+.skin-btn, .theme-select-btn, .victory-sound-select-btn {
+  background: var(--primary-color);
+  color: #FFFFFF;
+  box-shadow: 0 0 10px var(--primary-color);
+}
+
+.skin-btn:hover, .theme-select-btn:hover:not(:disabled), .victory-sound-select-btn:hover:not(:disabled) {
+  background: var(--primary-hover);
+  box-shadow: 0 0 15px var(--primary-hover);
+}
+
+/* Кнопки победы и импичмента */
+.win-btn {
+  background: var(--button-bg);
+  border-color: var(--primary-color);
+  color: var(--button-text);
+}
+.win-btn:hover {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  color: #FFFFFF;
+}
+
+/* Mobile: remove heavy glow shadows for low-end GPUs */
+@media (max-width: 768px) {
+  body {
+    text-shadow: none !important;
+  }
+
+  .cell {
+    box-shadow: none;
+  }
+
+  .cell.water {
+    box-shadow: none;
+  }
+
+  .cell.selected {
+    box-shadow: 0 0 4px var(--cell-selected);
+  }
+
+  .cell.target {
+    box-shadow: 0 0 4px var(--cell-target);
+  }
+
+  button {
+    box-shadow: none;
+  }
+
+  button:hover {
+    box-shadow: none;
+  }
+
+  .level-btn.done {
+    box-shadow: none;
+  }
+
+  .skin-btn, .theme-select-btn, .victory-sound-select-btn {
+    box-shadow: none;
+  }
+
+  .skin-btn:hover, .theme-select-btn:hover:not(:disabled), .victory-sound-select-btn:hover:not(:disabled) {
+    box-shadow: none;
+  }
+}
