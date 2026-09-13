@@ -1,5 +1,9 @@
-const MOVES_KEY = "socio-cats:totalMoves";
-const TIME_KEY = "socio-cats:totalTimeMs";
+const MOVES_KEY = "ak_gs_total_moves";
+const TIME_KEY = "ak_gs_total_time_ms";
+
+// НЕ переносим значения из "socio-cats:*": это хранилище ДРУГОЙ игры
+// (royal-socio-cats). Статистика anti-kotopark живёт только здесь, под
+// ключами "ak_gs_total_moves"/"ak_gs_total_time_ms".
 
 let totalMoves = 0;
 let totalTimeMs = 0;
@@ -8,6 +12,10 @@ function load() {
   try {
     totalMoves = parseInt(localStorage.getItem(MOVES_KEY), 10) || 0;
     totalTimeMs = parseInt(localStorage.getItem(TIME_KEY), 10) || 0;
+
+    // Миграция из "socio-cats:*" удалена: хранилища игр разделены.
+    // Статистика стартует с "ak_gs_total_moves"/"ak_gs_total_time_ms"
+    // (сброс выполняет js/core/freshStart.js).
   } catch (e) {
     totalMoves = 0;
     totalTimeMs = 0;

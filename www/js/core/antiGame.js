@@ -1,6 +1,5 @@
 import { Board } from "./board.js";
 import { canMove, applyMove } from "./movement.js";
-import { calcMood } from "../socionics/mood.js";
 import { TYPES } from "../socionics/types.js";
 
 // Game controller for Anti-Kotopark mode
@@ -33,7 +32,7 @@ export class AntiGame {
     });
   }
 
-  moodAt(r, c) { return calcMood(this.board, r, c); }
+  moodAt(r, c) { return this.board.moodAt(r, c); }
   isSelected(r, c) { return !!this.selected && this.selected.r === r && this.selected.c === c; }
   isTarget(r, c) { return !!this.selected && canMove(this.board, this.selected, { r, c }); }
   getMoveCount() { return this.moveCount; }

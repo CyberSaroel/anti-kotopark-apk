@@ -16,11 +16,10 @@ const ROCKETS_KEY = "ak_rockets";
 const TOTAL_MOVES_KEY = "ak_total_moves";
 const TOTAL_TIME_KEY = "ak_total_time_ms";
 
-// Устаревшие ключи старого модуля экономики (копия royal-socio-cats).
-// При переходе на единую экономику переносим накопленные значения,
-// чтобы игрок не потерял рыбок и королей.
-const LEGACY_KINGS_TOTAL_KEY = "socio-cats:kingsTotal";
-const LEGACY_ROCKETS_KEY = "socio-cats:rockets";
+// НЕ переносим значения из "socio-cats:*": это хранилище ДРУГОЙ игры
+// (royal-socio-cats). Кэш и сохранения каждой игры должны быть полностью
+// изолированы друг от друга, поэтому Рыбки и короли живут только здесь,
+// под ключами "ak_*".
 
 let kingsThisLevel = 0;
 let kingsTotal = 0;
@@ -35,17 +34,9 @@ function loadFromStorage() {
     totalMoves = parseInt(localStorage.getItem(TOTAL_MOVES_KEY), 10) || 0;
     totalTimeMs = parseInt(localStorage.getItem(TOTAL_TIME_KEY), 10) || 0;
 
-    // Миграция со старого хранилища (royalEconomy.js, ключи "socio-cats:*"):
-    // если в новой экономике ещё ничего нет, а в старой уже было — переносим.
-    if (kingsTotal === 0 && rockets === 0) {
-      const legacyKings = parseInt(localStorage.getItem(LEGACY_KINGS_TOTAL_KEY), 10) || 0;
-      const legacyRockets = parseInt(localStorage.getItem(LEGACY_ROCKETS_KEY), 10) || 0;
-      if (legacyKings > 0 || legacyRockets > 0) {
-        kingsTotal = legacyKings;
-        rockets = legacyRockets;
-        saveToStorage();
-      }
-    }
+    // Миграция из "socio-cats:*" удалена: хранилища игр разделены.
+    // Рыбки и короли anti-kotopark стартуют с того, что записано под
+    // "ak_kings_total"/"ak_rockets" (сброс выполняет js/core/freshStart.js).
   } catch (e) {
     kingsTotal = 0;
     rockets = 0;

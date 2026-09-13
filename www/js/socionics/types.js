@@ -61,7 +61,7 @@ const GULENKO_NAMES = {
 };
 
 // Ключ для localStorage
-export const NAMING_KEY = "socio-cats:namingStyle";
+export const NAMING_KEY = "ak_naming_style";
 
 /**
  * Получить текущий стиль наименований из localStorage.

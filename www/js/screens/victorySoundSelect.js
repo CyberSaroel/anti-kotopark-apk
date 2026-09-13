@@ -1,7 +1,7 @@
 import { audioManager } from "../core/audioManager.js";
 import NavigationService from "../core/navigation.js";
 
-const VICTORY_SOUND_KEY = "socio-cats:selectedVictorySound";
+const VICTORY_SOUND_KEY = "ak_selected_victory_sound";
 
 const VICTORY_SOUNDS = [
   {

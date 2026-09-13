@@ -16,6 +16,9 @@
  */
 export function showStatBoost(el, text, positive = true) {
   if (!el) return;
+  // Одна синхронная читка геометрии на вызов (необходима для позиционирования
+  // вспышки). Раньше при каждом бонусе вызывался ещё и findStatItem с
+  // querySelectorAll по всему HUD — теперь элементы передаются готовыми.
   const rect = el.getBoundingClientRect();
   if (rect.width === 0 && rect.height === 0) return;
 

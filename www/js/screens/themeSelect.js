@@ -1,7 +1,10 @@
 import { audioManager } from "../core/audioManager.js";
 import NavigationService from "../core/navigation.js";
 
-const THEME_KEY = "socio-cats:selectedTheme";
+// Ключ выбранной темы оформления. ⚠ НЕ путать с "ak_theme" — тот занят
+// механизмом js/storage.js / js/theme.js (data-theme на <html>) и живёт
+// своей жизнью.
+const THEME_KEY = "ak_selected_theme";
 
 export function getSelectedTheme() {
   try {

@@ -21,7 +21,7 @@ import {
   addTotalMoves,
   addTotalTime
 } from "./core/royalStats.js";
-import { showStatBoost, findStatItem } from "./ui/statBoost.js";
+import { showStatBoost } from "./ui/statBoost.js";
 import { launchLevel } from "./screens/gameScreen.js";
 import { showImpeachmentScreen } from "./screens/impeachmentScreen.js";
 import { showWinScreen } from "./screens/winScreen.js";
@@ -53,6 +53,8 @@ export const LEVEL10_ID = 10;
 
 let levelActive = false;
 let timerId = null;
+// Таймер подавления «выделения» вариантов при первом появлении окна
+let modalHoldTimer = null;
 
 /**
  * Загрузить конфигурацию анти-уровня.
@@ -122,6 +124,9 @@ export async function startAntiLevel(root, levelId) {
   let previousKings = new Set();     // короли на прошлой отрисовке («клетка»)
   let prevAntiCatCells = null;       // клетки с котами на прошлой отрисовке (Set индексов)
   let prevAntiMoods = {};            // настроение котов на прошлой отрисовке (индекс → mood)
+  // Переиспользуемые контейнеры для анимации котов (без аллокаций на каждый ход).
+  const antiAnimIdx = new Set();
+  let antiCurMoods = {};
   let kingsAtWin = 0;                // 👑 короли, зафиксированные при победе
   let levelCleaned = false;          // защита от двойного addTotalTime
 
@@ -251,11 +256,9 @@ export async function startAntiLevel(root, levelId) {
   stage.appendChild(stats);
   root.appendChild(stage);
 
-  // Модальное окно выбора социотипа (вместо постоянного левого сайдбара)
-  const socioModal = document.createElement("div");
-  socioModal.className = "socio-modal";
-  socioModal.hidden = true;
-
+  // Модальное окно выбора социотипа (вместо постоянного левого сайдбара).
+  // Каркас (подложка, центрирование, закрытие по фону/Escape) даёт Tingle.js,
+  // содержимое окна — наша карточка .socio-modal-card.
   const socioModalCard = document.createElement("div");
   socioModalCard.className = "socio-modal-card";
 
@@ -293,56 +296,54 @@ export async function startAntiLevel(root, levelId) {
 
   socioModalCard.appendChild(socioModalHeader);
   socioModalCard.appendChild(socioModalList);
-  socioModal.appendChild(socioModalCard);
 
-  // Клик вне карточки (по полю/мимо) закрывает окно — как раньше по затемнению.
-  // Клик по коту не закрывает: его обрабатывает onCatClick (переключение/закрытие).
-  let suppressNextBoardClick = false;
-  const onDocPointerDown = (e) => {
-    if (socioModal.hidden) return;
-    if (socioModalCard.contains(e.target)) return;
-    // Клик по коту (или его подписи) — не закрываем, обработает onCatClick
-    const cell = e.target.closest && e.target.closest(".cell");
-    if (cell && cell.querySelector("img.cat")) return;
-    audioManager.initAudioContext();
-    closeSocioMenuKeepSelection();
-    // Если клик пришёлся на доступную цель выбранного кота — не подавляем его:
-    // окно закрылось, а то же нажатие передвинет кота на эту клетку.
-    let isTargetClick = false;
-    if (cell && selectedCatRC && game.selected) {
-      const idx = Array.prototype.indexOf.call(cell.parentNode.children, cell);
-      const r = Math.floor(idx / game.board.cols);
-      const c = idx % game.board.cols;
-      if (game.isTarget(r, c)) isTargetClick = true;
-    }
-    if (isTargetClick) {
-      suppressNextBoardClick = false;
-    } else {
-      // Этот клик уже ушёл на поле — не даём ему передвинуть кота/выделить клетку
-      suppressNextBoardClick = true;
-      setTimeout(() => { suppressNextBoardClick = false; }, 50);
-    }
-  };
-  document.addEventListener("pointerdown", onDocPointerDown);
-
-  root.appendChild(socioModal);
+  // Tingle.js даёт каркас окна: затемняющую подложку, центрирование,
+  // закрытие по клику вне окна (overlay) и по Escape. Свою кнопку закрытия
+  // Tingle не создаёт (её нет в closeMethods) — используем крестик в шапке.
+  if (!window.tingle) {
+    console.error("Tingle.js не загружен: проверьте vendor/tingle/tingle.min.js");
+  }
+  const socioTingle = new window.tingle.modal({
+    cssClass: ["socio-modal-tingle"],
+    closeMethods: ["overlay", "escape"],
+    onOpen() {
+      audioManager.initAudioContext();
+    },
+    onClose() {
+      // Закрытие модалки (фон/Escape/крестик): кот остаётся выделенным,
+      // при необходимости возвращаем состояние «выбран» и снимаем hold.
+      if (catState === "choosing") catState = "selected";
+      if (modalHoldTimer) { clearTimeout(modalHoldTimer); modalHoldTimer = null; }
+      socioModalCard.classList.remove("socio-modal-hold", "closing");
+      socioModalCard.style.animation = "";
+    },
+  });
+  socioTingle.setContent(socioModalCard);
 
   // --- Состояние выбора кота ---
   let catState = "idle"; // idle | selected | choosing
   let selectedCatEl = null;
   let selectedCatRC = null; // {r, c} выбранного кота
   let currentCatIndex = null; // индекс выбранного кота
+  // Время последнего выделения кота. На тач-экранах после touchend браузер
+  // шлёт эмуляционный click: render() пересоздаёт клетку, и «защита от
+  // двойного вызова» по старому узлу не срабатывает — тот же физический тап
+  // может вызвать onCatClick дважды и сразу открыть меню («после первого
+  // нажатия»). Чтобы меню открывалось только после ОСОЗНАННОГО второго тапа,
+  // игнорируем повторное срабатывание в коротком окне после выделения.
+  let lastSelectTs = 0;
+  // Момент, когда модальное окно было ПОКАЗАНО. Эмуляционный click (который
+  // браузер шлёт после touchend/клика, открывшего окно) может «долететь» уже
+  // до кнопок и автоматически «нажать» социотип. Игнорируем нажатия кнопок в
+  // небольшом окне после открытия, чтобы тип не выбирался сам.
+  let menuOpenedAt = 0;
 
   // --- Рендер ---
   function render() {
     renderAntiBoard(boardEl, game, (r, c) => {
       // Пока открыто окно выбора социотипа, поле не реагирует на клики
-      // (раньше это обеспечивало затемнение) — игровая логика не меняется.
-      // Во время анимации ЗАКРЫТИЯ (closing) поле уже реагирует: клик по
-      // соседней клетке тут же передвинет выделенного кота.
-      if (!socioModal.hidden && !socioModalCard.classList.contains("closing")) return;
-      // Клик, который только что закрыл окно, не должен двигать кота
-      if (suppressNextBoardClick) return;
+      // (подложка Tingle перекрывает поле) — игровая логика не меняется.
+      if (socioTingle.isOpen()) return;
       // Клик по пустой клетке при выбранном коте снимает выбор, НО только если
       // это не доступный ход выбранного кота — иначе дальше clickCell
       // передвинет кота. Раньше resetCatSelection() обнулял game.selected даже
@@ -372,10 +373,20 @@ export async function startAntiLevel(root, levelId) {
          }
          addTotalMoves(1); // общий счётчик ходов (адаптация royal-socio-cats)
          // Красная вспышка штрафа на счётчике ходов (адаптация boost-glow/boost-float)
-         showStatBoost(findStatItem(stats, "Ходы"), "-1", false);
+         showStatBoost(statEl("Ходы"), "-1", false);
          audioManager.playSoundEffect("assets/sounds/move.mp3");
-          // Рамка выбора следует за котом на новую позицию
-          selectedCatRC = { r, c };
+          // Мобильная версия (узкий экран, vendor/bootstrap): после перемещения
+          // кота («?» в т.ч.) снимаем выбор. Иначе кот остаётся «наведённым на
+          // меню», и следующий тап по нему сразу откроет модальное окно социотипов
+          // — т.е. оно покажется «после первого же нажатия» и сразу после хода.
+          // Нужный сценарий: первый тап выбирает кота, второй — уже осознанно
+          // открывает меню. На десктопе выбор по-прежнему следует за котом.
+          if (isCompactUI()) {
+            resetCatSelection();
+          } else {
+            // Рамка выбора следует за котом на новую позицию
+            selectedCatRC = { r, c };
+          }
           render();
           if (movesRemaining <= 0) {
             checkImpeachment("Ходы закончились");
@@ -409,18 +420,24 @@ export async function startAntiLevel(root, levelId) {
     // - кот «приземлился» на новую клетку  → cat-land;
     // - настроение любого кота ИЗМЕНИЛОСЬ (вверх или вниз) → mood-change.
     // CSS-классы cat-land/mood-change уже есть в css/cats.css.
-    const antiAnimCells = boardEl.querySelectorAll(".cell");
-    const antiCurMoods = {};
-    const antiCurCatCells = new Set();
-    antiAnimCells.forEach((cell, index) => {
-      if (cell.dataset.mood === undefined) return;
-      antiCurCatCells.add(index);
+    //
+    // ПРОИЗВОДИТЕЛЬНОСТЬ: раньше тут делался boardEl.querySelectorAll(".cell")
+    // (построение NodeList на 64 узла) и ДВА прохода по нему + cell.querySelector
+    // для каждой клетки на КАЖДЫЙ рендер. Теперь идём только по клеткам с
+    // котами (их ≤ 20, известны из board.allCats()) и берём узлы из кэша.
+    antiAnimIdx.clear();
+    antiCurMoods = {};
+    const catsNow = game.board.allCats();
+    const cellsNow = boardEl.children;
+    for (let i = 0; i < catsNow.length; i++) {
+      const { r, c } = catsNow[i];
+      const index = r * game.board.cols + c;
+      const cell = cellsNow[index];
+      if (!cell || cell.dataset.mood === undefined) continue;
+      antiAnimIdx.add(index);
       antiCurMoods[index] = cell.dataset.mood;
-    });
-    antiAnimCells.forEach((cell, index) => {
-      if (cell.dataset.mood === undefined) return;
-      const catImg = cell.querySelector(".cat");
-      if (!catImg) return;
+      const catImg = cell.firstElementChild;
+      if (!catImg || !catImg.classList.contains("cat")) continue;
       const arrived = prevAntiCatCells && !prevAntiCatCells.has(index);
       const moodChanged = prevAntiMoods[index] !== undefined && prevAntiMoods[index] !== antiCurMoods[index];
       if (arrived) {
@@ -430,9 +447,9 @@ export async function startAntiLevel(root, levelId) {
         catImg.classList.add("mood-change");
         catImg.addEventListener("animationend", () => catImg.classList.remove("mood-change"), { once: true });
       }
-    });
+    }
     prevAntiMoods = antiCurMoods;
-    prevAntiCatCells = antiCurCatCells;
+    prevAntiCatCells = antiAnimIdx;
 
     updateKingTracking();
     updateStats();
@@ -452,14 +469,23 @@ export async function startAntiLevel(root, levelId) {
   // Позиционирование счётчиков: игровое поле остаётся строго по центру экрана,
   // статистика — справа от поля с тем же отступом 20px, что был раньше
   // (flex gap в .anti-game-stage), верх счётчиков — по верху поля.
-  function positionStats() {
+  //
+  // ПРОИЗВОДИТЕЛЬНОСТЬ: читает getBoundingClientRect() (синхронный reflow).
+  // Раньше вызывалась на КАЖДЫЙ updateStats (раз в 200 мс) и на каждый ход.
+  // Теперь позиция кэшируется: если геометрия поля не изменилась — не трогаем
+  // style вообще. Форс-пересчёт доступен через positionStats(true).
+  let lastStatsPos = null;
+  function positionStats(force = false) {
     try {
       if (isCompactUI()) {
-        stats.style.position = "";
-        stats.style.left = "";
-        stats.style.top = "";
-        stats.style.right = "";
-        stats.style.transform = "";
+        if (lastStatsPos !== "compact") {
+          stats.style.position = "";
+          stats.style.left = "";
+          stats.style.top = "";
+          stats.style.right = "";
+          stats.style.transform = "";
+          lastStatsPos = "compact";
+        }
         return;
       }
       stats.style.position = "absolute";
@@ -480,8 +506,17 @@ export async function startAntiLevel(root, levelId) {
       // если счётчики временно стоят у края).
       const statsW = getStatsContentWidth() || stats.offsetWidth;
       const maxLeft = window.innerWidth - statsW - 12;
-      stats.style.left = Math.max(12, Math.min(left, maxLeft)) + "px";
-      stats.style.top = top + "px";
+      const posLeft = Math.max(12, Math.min(left, maxLeft));
+      const posTop = top;
+      // Геометрия не изменилась — не пишем style (это вызывает лишний reflow).
+      if (!force && lastStatsPos &&
+          lastStatsPos.left === posLeft && lastStatsPos.top === posTop &&
+          lastStatsPos.statsW === statsW) {
+        return;
+      }
+      lastStatsPos = { left: posLeft, top: posTop, statsW };
+      stats.style.left = posLeft + "px";
+      stats.style.top = posTop + "px";
       stats.style.right = "";
       stats.style.transform = "";
     } catch (e) {
@@ -491,8 +526,13 @@ export async function startAntiLevel(root, levelId) {
 
   // Пересчёт позиции счётчиков после отрисовки поля: renderAntiBoard асинхронный
   // (клетки строятся после await загрузки скинов), поэтому ждём кадр.
+  // Батчинг: несколько вызовов в одном кадре схлопываются в один пересчёт.
+  let posStatsScheduled = false;
   function schedulePositionStats() {
+    if (posStatsScheduled) return;
+    posStatsScheduled = true;
     requestAnimationFrame(() => {
+      posStatsScheduled = false;
       if (levelActive) positionStats();
     });
   }
@@ -505,6 +545,7 @@ export async function startAntiLevel(root, levelId) {
     catState = "selected";
     selectedCatRC = { r, c };
     currentCatIndex = catIndex;
+    lastSelectTs = Date.now();
     if (selectedCatEl) selectedCatEl.classList.remove("cat--selected");
     selectedCatEl = findCatCell(r, c);
     if (selectedCatEl) selectedCatEl.classList.add("cat--selected");
@@ -515,9 +556,10 @@ export async function startAntiLevel(root, levelId) {
 
   // Логика выбора: первое нажатие выбирает кота, второе по тому же — открывает меню.
   // Нажатие на нового кота считается первым (выбор переключается на него).
+  // NB: для котов без типа («?») не играем click.mp3 — по просьбе минимизировать
+  // шум «нажатий» при работе с такими котами (в т.ч. во время их перемещения).
   function onCatClick(catIndex, r, c) {
     audioManager.initAudioContext();
-    audioManager.playSoundEffect("assets/sounds/click.mp3");
     if (won || impeached) return;
 
     // Меню открыто: повторный тап по тому же коту закрывает его, но оставляет кот выделенным
@@ -527,8 +569,16 @@ export async function startAntiLevel(root, levelId) {
       return;
     }
 
-    // Кот уже выбран рамкой: открыть меню социотипов
+    // Кот уже выбран рамкой: открыть меню социотипов.
+    // На тач-экранах один физический тап может прийти сюда ДВАЖДЫ (touchend +
+    // эмуляционный click после перерисовки клетки). Окно открываем только на
+    // ОСОЗНАННОМ повторном тапе, т.е. когда кот был выделен заметное время
+    // назад — иначе меню «выскочит после первого же нажатия».
     if (currentCatIndex === catIndex) {
+      const repeatWindow = 400; // мс — окно эмуляционного повторного события
+      if (isCompactUI() && Date.now() - lastSelectTs < repeatWindow) {
+        return; // это повтор того же тапа: кот выделен, меню пока не открываем
+      }
       catState = "choosing";
       showSocioMenu(catIndex);
       return;
@@ -539,8 +589,10 @@ export async function startAntiLevel(root, levelId) {
   }
 
   function findCatCell(r, c) {
+    // ПРОИЗВОДИТЕЛЬНОСТЬ: boardEl.children — живая коллекция, доступ по индексу
+    // O(1), без построения NodeList через querySelectorAll на каждый вызов.
     const idx = r * game.board.cols + c;
-    return boardEl.querySelectorAll(".cell")[idx] || null;
+    return boardEl.children[idx] || null;
   }
 
   // Кнопки социотипов в модальном окне (существующие стили анти-тайп-кнопок)
@@ -552,6 +604,10 @@ export async function startAntiLevel(root, levelId) {
       btn.textContent = getTypeDisplayName(type);
       btn.addEventListener("click", () => {
         if (currentCatIndex === null) return;
+        // Если окно только что открылось (меньше 500 мс назад), этот клик —
+        // «долетевший» эмуляционный повтор тапа, открывшего окно. Пропускаем,
+        // чтобы социотип НЕ выбирался автоматически сразу после появления окна.
+        if (Date.now() - menuOpenedAt < 500) return;
         audioManager.initAudioContext();
         const catIdx = currentCatIndex;
         hideSocioMenu();
@@ -570,19 +626,21 @@ export async function startAntiLevel(root, levelId) {
     game.selected = null;
   }
 
+  // Закрыть окно социотипов через Tingle: сначала проигрываем нашу анимацию
+  // «ухода в огонь» (класс closing), затем прячем модалку средствами Tingle.
   function hideSocioMenu() {
-    // Уже скрыто или анимация закрытия уже запущена — повторно не запускаем
-    if (socioModal.hidden || socioModalCard.classList.contains("closing")) return;
+    // Уже скрыто или закрытие уже запущено — повторно не запускаем
+    if (!socioTingle.isOpen() || socioModalCard.classList.contains("closing")) return;
     socioModalCard.classList.add("closing");
     let finished = false;
     const finalize = () => {
       if (finished) return;
       finished = true;
       socioModalCard.classList.remove("closing");
-      socioModal.hidden = true;
+      socioTingle.close();
     };
     socioModalCard.addEventListener("animationend", finalize, { once: true });
-    // Страховка: если событие animationend не сработало (неактивная вкладка и т.п.)
+    // Страховка: если animationend не сработал (неактивная вкладка и т.п.)
     setTimeout(finalize, 350);
   }
 
@@ -594,43 +652,13 @@ export async function startAntiLevel(root, levelId) {
     hideSocioMenu();
   }
 
-  // Центрирование модального окна строго по центру игрового поля (доски).
-  // Позиция пересчитывается при каждом открытии и при изменении размеров
-  // экрана/поля/масштабировании. Окно не выходит за границы видимой области —
-  // при необходимости позиция корректируется.
-  function positionSocioModal() {
-    const boardRect = boardEl.getBoundingClientRect();
-    const modalRect = socioModal.getBoundingClientRect();
-    const pad = 8;
-
-    // Центр игрового поля
-    let left = boardRect.left + boardRect.width / 2 - modalRect.width / 2;
-    let top = boardRect.top + boardRect.height / 2 - modalRect.height / 2;
-
-    // Коррекция: окно не должно выходить за видимую область экрана
-    left = Math.min(Math.max(pad, left), Math.max(pad, window.innerWidth - modalRect.width - pad));
-    top = Math.min(Math.max(pad, top), Math.max(pad, window.innerHeight - modalRect.height - pad));
-
-    socioModal.style.left = `${left}px`;
-    socioModal.style.top = `${top}px`;
-    socioModal.style.transform = "none";
-  }
-
-  // Динамическое позиционирование: пересчёт по центру поля при изменении
-  // размеров окна браузера, разрешения экрана и масштабировании страницы,
-  // пока окно открыто. rAF — чтобы координаты доски уже были пересчитаны.
-  const onViewportResize = () => {
-    if (socioModal.hidden) return;
-    requestAnimationFrame(positionSocioModal);
-  };
-  window.addEventListener("resize", onViewportResize);
-  window.visualViewport?.addEventListener("resize", onViewportResize);
-
   // Пересчёт позиции счётчиков при изменении размеров окна/масштабировании:
   // поле пересобирается под новый размер, счётчики остаются справа от него.
   const statsResizeListener = () => {
     refitBoard();
-    schedulePositionStats();
+    // При resize геометрия могла измениться — снимаем кэш позиции и
+    // пересчитываем принудительно (positionStats(true) в следующем кадре).
+    positionStats(true);
   };
   window.addEventListener("resize", statsResizeListener);
   window.visualViewport?.addEventListener("resize", statsResizeListener);
@@ -638,37 +666,51 @@ export async function startAntiLevel(root, levelId) {
 
   function showSocioMenu(catIndex) {
     currentCatIndex = catIndex;
-    socioModalTitle.textContent = `Выберите социотип — кот №${catIndex + 1}`;
+    // Заголовок условно «Выберите <br> социотип — кот №N»:
+    // на мобильной версии CSS укладывает spans в 2 ряда — 1-я строка
+    // «Выберите», 2-я «социотип — кот №N». На desktop они в одной строке.
+    socioModalTitle.replaceChildren();
+    const titlePrefix = document.createElement("span");
+    titlePrefix.className = "socio-modal-title-prefix";
+    titlePrefix.textContent = "Выберите ";
+    const titleCat = document.createElement("span");
+    titleCat.className = "socio-modal-title-cat";
+    titleCat.textContent = `социотип — кот №${catIndex + 1}`;
+    socioModalTitle.append(titlePrefix, titleCat);
     createTypeButtons();
+    // Фиксируем момент открытия, чтобы подавить «долетевший» эмуляционный
+    // клик, который иначе автоматически нажал бы социотип сразу после появления окна.
+    menuOpenedAt = Date.now();
     // Перезапуск анимации появления, если окно закрывалось анимацией
     socioModalCard.classList.remove("closing");
-    socioModal.hidden = false;
+    // Открываем окно средствами Tingle (подложка, центрирование, скролл-лок)
+    socioTingle.open();
     socioModalCard.style.animation = "none";
     void socioModalCard.offsetWidth; // принудительный reflow для перезапуска
     socioModalCard.style.animation = "";
 
-    // --- Позиционирование по центру игрового поля ---
-    // Скрываем окно до вычисления координат, чтобы оно не мелькало в углу
-    socioModal.style.visibility = "hidden";
+    // При первом/любом открытии ни один вариант ответа не должен выглядеть
+    // «отмеченным». Снимаем возможный фокус/подсветку с кнопок типа (иначе
+    // браузер держал бы его от предыдущего активного элемента и кнопка
+    // выглядела бы выбранной без действий игрока).
+    const modalActiveEl = document.activeElement;
+    if (modalActiveEl && modalActiveEl.closest(".socio-modal-card")) {
+      modalActiveEl.blur();
+    }
 
+    // Чтобы ни одна кнопка в момент появления окна не выглядела «выделенной»:
+    // временно глушим hover/focus (класс socio-modal-hold) на короткое время,
+    // пока игрок не совершит реального действия.
+    socioModalCard.classList.remove("socio-modal-hold");
+    if (modalHoldTimer) clearTimeout(modalHoldTimer);
     requestAnimationFrame(() => {
-      if (socioModal.hidden) {
-        socioModal.style.visibility = "";
-        return;
-      }
-      positionSocioModal();
-      socioModal.style.visibility = "";
+      socioModalCard.classList.add("socio-modal-hold");
+      modalHoldTimer = setTimeout(() => {
+        socioModalCard.classList.remove("socio-modal-hold");
+        modalHoldTimer = null;
+      }, 500);
     });
   }
-
-  // Закрытие модального окна по Escape
-  const onModalKeyDown = (e) => {
-    if (e.key === "Escape" && !socioModal.hidden) {
-      audioManager.initAudioContext();
-      closeSocioMenuKeepSelection();
-    }
-  };
-  document.addEventListener("keydown", onModalKeyDown);
 
   // ==== Чит-код «Aushra»: набор прямо на странице игры ====
   // Собираем печатные символы в буфер и сравниваем с кодом (без учёта регистра).
@@ -695,8 +737,8 @@ export async function startAntiLevel(root, levelId) {
       levelRemainingMs += TIME_BONUS_HAPPY * 1000; // синхронизация нового счётчика
        showFloatingBonus(`+${MOVE_BONUS_HAPPY} 👣 +${TIME_BONUS_HAPPY} ⏱`);
        // Золотая анимация бонуса на счётчиках ходов и времени (как boost у рыбок)
-       showStatBoost(findStatItem(stats, "Ходы"), `+${MOVE_BONUS_HAPPY}`, true);
-       showStatBoost(findStatItem(stats, "Время"), `+${TIME_BONUS_HAPPY}`, true);
+       showStatBoost(statEl("Ходы"), `+${MOVE_BONUS_HAPPY}`, true);
+       showStatBoost(statEl("Время"), `+${TIME_BONUS_HAPPY}`, true);
      } else {
       // Ошибка: НЕ показываем правильный ответ — низкий противный звук.
       // За неправильное угадывание убавляются ходы и время (как в royal-socio-cats).
@@ -712,7 +754,7 @@ export async function startAntiLevel(root, levelId) {
         spendBonusError();
         // Визуальный фидбек, что ошибку покрыло бонусное право
         showFloatingBonus("❤️ Бонусное право на ошибку");
-        showStatBoost(findStatItem(stats, "Ошибки"), "💛", false);
+        showStatBoost(statEl("Ошибки"), "💛", false);
       } else {
         outOfErrors = true;
       }
@@ -726,9 +768,9 @@ export async function startAntiLevel(root, levelId) {
       flashCatRed();
        showFloatingBonus(`-${MOVE_PENALTY_ERROR} 👣 -${TIME_PENALTY_ERROR} ⏱`);
        // Красная анимация штрафа на счётчиках ходов, времени и ошибок
-       showStatBoost(findStatItem(stats, "Ходы"), `-${MOVE_PENALTY_ERROR}`, false);
-       showStatBoost(findStatItem(stats, "Время"), `-${TIME_PENALTY_ERROR}`, false);
-       showStatBoost(findStatItem(stats, "Ошибки"), "-1", false);
+       showStatBoost(statEl("Ходы"), `-${MOVE_PENALTY_ERROR}`, false);
+       showStatBoost(statEl("Время"), `-${TIME_PENALTY_ERROR}`, false);
+       showStatBoost(statEl("Ошибки"), "-1", false);
        if (outOfErrors) {
         // Импичмент вызываем СРАЗУ — чтобы сброс выделения/перерисовка поля
         // не могли помешать показать экран проигрыша (иначе получится «бессмертие»).
@@ -802,8 +844,8 @@ export async function startAntiLevel(root, levelId) {
        showFloatingBonus(`+${happy} 👣 +${happy * 2} ⏱`);
        updateStats();
        // Золотая анимация бонуса за довольных котов
-       showStatBoost(findStatItem(stats, "Ходы"), `+${happy}`, true);
-       showStatBoost(findStatItem(stats, "Время"), `+${happy * 2}`, true);
+       showStatBoost(statEl("Ходы"), `+${happy}`, true);
+       showStatBoost(statEl("Время"), `+${happy * 2}`, true);
      }
    }
 
@@ -910,10 +952,10 @@ export async function startAntiLevel(root, levelId) {
 
     // Золотая вспышка на счётчике королей при появлении каждого короля
     if (newKings.size > 0) {
-      showStatBoost(findStatItem(stats, "Короли"), `+${newKings.size}`, true);
+      showStatBoost(statEl("Короли"), `+${newKings.size}`, true);
     }
     if (newKings.size > 0) {
-      const cells = boardEl.querySelectorAll(".cell");
+      const cells = boardEl.children;
       for (const key of newKings) {
         const [r, c] = key.split(",").map(Number);
         const index = r * game.board.cols + c;
@@ -974,8 +1016,8 @@ export async function startAntiLevel(root, levelId) {
       movesRemaining += 5;
       maxHappyCats = happy;
       // Красивая анимация бонуса на счётчиках ходов и времени
-      showStatBoost(findStatItem(stats, "Ходы"), "+5", true);
-      showStatBoost(findStatItem(stats, "Время"), "+10", true);
+      showStatBoost(statEl("Ходы"), "+5", true);
+      showStatBoost(statEl("Время"), "+10", true);
       // Звук "Дзинь!" — за каждое увеличение максимума довольных на 1,
       // как в royal-socio-cats (не за изменение mood отдельных котов).
       for (let i = 0; i < increase; i++) {
@@ -988,10 +1030,10 @@ export async function startAntiLevel(root, levelId) {
 
     // Анимации на счётчиках довольных/недовольных при их изменении
     if (lastHappyCount !== null && happy !== lastHappyCount) {
-      showStatBoost(findStatItem(stats, "Довольные"), `${happy - lastHappyCount > 0 ? "+" : ""}${happy - lastHappyCount}`, happy > lastHappyCount);
+      showStatBoost(statEl("Довольные"), `${happy - lastHappyCount > 0 ? "+" : ""}${happy - lastHappyCount}`, happy > lastHappyCount);
     }
     if (lastUnhappyCount !== null && unhappy !== lastUnhappyCount) {
-      showStatBoost(findStatItem(stats, "Недовольные"), `${unhappy - lastUnhappyCount > 0 ? "+" : ""}${unhappy - lastUnhappyCount}`, unhappy < lastUnhappyCount);
+      showStatBoost(statEl("Недовольные"), `${unhappy - lastUnhappyCount > 0 ? "+" : ""}${unhappy - lastUnhappyCount}`, unhappy < lastUnhappyCount);
     }
     lastHappyCount = happy;
     lastUnhappyCount = unhappy;
@@ -1027,58 +1069,163 @@ export async function startAntiLevel(root, levelId) {
     const movesColor = movesRemaining < 20 ? "color: #ff3333; font-weight: bold;" : "";
 
     const movesMade = game.getMoveCount();
+    // Пока идёт победа — показываем зафиксированное число королей.
     const kingsCount = won ? kingsAtWin : getKingsThisLevel();
     const rocketsCount = getRockets();
     const canUseRocket = rocketsCount > 0 && !won && !impeached;
-    const rocketBtnClass = `rocket-btn ${!canUseRocket ? "rocket-btn-disabled" : ""}`;
-    const rocketBtnHtml = `<button class="${rocketBtnClass}" id="rocket-btn" ${!canUseRocket ? "disabled" : ""}><img class="fish-icon" src="assets/icons/fish.png" alt="">&nbsp;Рыбки: ${rocketsCount}</button>`;
     // Кнопка «Открыть типы всех котов»: на уровнях 1–30 доступна всегда,
     // а после чит-кода «Aushra» появляется (с анимацией) на любом уровне.
     const showTestRevealBtn = cheatUnlocked || levelId <= 30;
-    const testRevealBtnHtml = showTestRevealBtn
+
+    // ПРОИЗВОДИТЕЛЬНОСТЬ: раньше updateStats() полностью перезаписывал
+    // stats.innerHTML КАЖДЫЕ 200 мс (таймер) и на каждый ход. Это парсинг HTML,
+    // пересоздание всех узлов, 6+ вызовов findStatItem (querySelectorAll +
+    // textContent.includes) и повторный reflow. Теперь структура HUD строится
+    // ОДИН раз, а дальнейшие обновления меняют только textContent по ссылкам.
+    updateStatsDom(stats, {
+      compact: isCompactUI(),
+      movesRemaining, movesMade, movesColor,
+      timerColor, levelRemainingMs, elapsedMs,
+      happy, unhappy, maxHappyCats, kingsCount,
+      errorsMade, currentErrorsRemaining, bonusErrorsLeft,
+      totalCats: game.board.allCats().length,
+      canUseRocket,
+      showTestRevealBtn
+    });
+
+    // Позиция счётчиков пересчитывается только при смене раскладки/размера.
+    schedulePositionStats();
+  }
+
+  // Хранит ссылки на узлы HUD, чтобы не искать их каждый раз.
+  const statsRefs = {
+    built: false,
+    compact: null,
+    movesVal: null, movesVal2: null, movesWord: null,
+    time: null, timeItem: null, elapsed: null, happy: null, unhappy: null,
+    maxHappy: null, kings: null, errMade: null, errLeft: null, errBonus: null,
+    goal: null, rockets: null, rocketBtn: null, testBtn: null
+  };
+
+  // Собрать структуру HUD ОДИН раз для текущей раскладки (мобильная/десктоп).
+  function buildStatsDom(container, compact, hasTestBtn) {
+    const items = [
+      `<div class="stat-item">🎯 Ходы: ${
+        compact
+          ? `(<span data-k="movesVal"></span>/<span data-k="movesMade"></span>)`
+          : `<span data-k="movesWord"></span> | сделано (<span data-k="movesVal"></span>/<span data-k="movesMade"></span>)`
+      }</div>`,
+      `<div class="stat-item" data-k="timeItem">⏱️ Время: осталось <span data-k="time"></span></div>`,
+      `<div class="stat-item">⏰ На уровне: <span data-k="elapsed"></span></div>`,
+      `<div class="stat-item">😊 Довольные: <span data-k="happy"></span></div>`,
+      `<div class="stat-item">😾 Недовольные: <span data-k="unhappy"></span></div>`,
+      `<div class="stat-item">⭐ Макс. довольных: <span data-k="maxHappy"></span></div>`,
+      `<div class="stat-item">👑 Короли: <span data-k="kings"></span></div>`,
+      `<div class="stat-item">❌ Ошибки: <span data-k="errMade"></span> | Осталось: <span data-k="errLeft"></span><span data-k="errBonus"></span></div>`,
+      `<div class="stat-item">🏆 Цель: зелёные <span data-k="goal"></span></div>`
+    ];
+
+    const rocketBtn = `<button class="rocket-btn" id="rocket-btn"><img class="fish-icon" src="assets/icons/fish.png" alt="">&nbsp;Рыбки: <span data-k="rockets"></span></button>`;
+    const testBtn = hasTestBtn
       ? `<button class="rocket-btn test-tool-btn" id="test-reveal-btn" type="button">🧠 Открыть типы всех котов</button>`
       : "";
 
-    // На мобильной версии текст короче — счётчики идут по два в ряд, места мало.
-    // Красным число оставшихся ходов и слово «осталось», когда их меньше 20 (как в royal-socio-cats).
-    const movesStatHtml = isCompactUI()
-      ? `<div class="stat-item">🎯 Ходы: (<span style="${movesColor}">${movesRemaining}</span>/${movesMade})</div>`
-      : `<div class="stat-item">🎯 Ходы: <span style="${movesColor}">осталось</span> | сделано (<span style="${movesColor}">${movesRemaining}</span>/${movesMade})</div>`;
-
-    const statItemsHtml = [
-      movesStatHtml,
-      `<div class="stat-item" style="${timerColor}">⏱️ Время: осталось ${formatTime(levelRemainingMs)}</div>`,
-      `<div class="stat-item">⏰ На уровне: ${formatTime(elapsedMs)}</div>`,
-      `<div class="stat-item">😊 Довольные: ${happy}</div>`,
-      `<div class="stat-item">😾 Недовольные: ${unhappy}</div>`,
-      `<div class="stat-item">⭐ Макс. довольных: ${maxHappyCats}</div>`,
-      `<div class="stat-item">👑 Короли: ${kingsCount}</div>`,
-      `<div class="stat-item">❌ Ошибки: ${errorsMade} | Осталось: ${currentErrorsRemaining}${bonusErrorsLeft > 0 ? ` | Бонус: ${bonusErrorsLeft}` : ""}</div>`,
-      `<div class="stat-item">🏆 Цель: зелёные ${happy}/${game.board.allCats().length}</div>`
-    ];
-
-    if (isCompactUI()) {
-      // Мобильная версия: Bootstrap-сетка из vendor/bootstrap/bootstrap-grid.min.css.
-      // Счётчики и кнопка «Рыбки» — по два в ряд (.row > .col-6), тестовые кнопки
-      // заказчика занимают всю ширину (col-12), чтобы текст не обрезался.
-      stats.innerHTML = `
+    if (compact) {
+      // Мобильная версия: Bootstrap-сетка (vendor/bootstrap/bootstrap-grid.min.css).
+      container.innerHTML = `
         <div class="container-fluid px-0">
           <div class="row g-2">
-            ${statItemsHtml.map(h => `<div class="col-6">${h}</div>`).join("")}
-            <div class="col-6">${rocketBtnHtml}</div>
-            ${showTestRevealBtn ? `<div class="col-12">${testRevealBtnHtml}</div>` : ""}
+            ${items.map(h => `<div class="col-6">${h}</div>`).join("")}
+            <div class="col-6">${rocketBtn}</div>
+            ${hasTestBtn ? `<div class="col-12">${testBtn}</div>` : ""}
           </div>
         </div>
       `;
     } else {
-      stats.innerHTML = `
-        ${statItemsHtml.join("")}
-        ${rocketBtnHtml}
-        ${showTestRevealBtn ? testRevealBtnHtml : ""}
-      `;
+      container.innerHTML = `${items.join("")}${rocketBtn}${testBtn}`;
     }
-    // После перерисовки (в т.ч. смены мобиль/десктоп) счётчики позиционируются
-    schedulePositionStats();
+
+    const q = (k) => container.querySelector(`[data-k="${k}"]`);
+    statsRefs.movesVal = q("movesVal");
+    statsRefs.movesVal2 = q("movesMade");
+    statsRefs.movesWord = q("movesWord");
+    statsRefs.time = q("time");
+    statsRefs.timeItem = q("timeItem");
+    statsRefs.elapsed = q("elapsed");
+    statsRefs.happy = q("happy");
+    statsRefs.unhappy = q("unhappy");
+    statsRefs.maxHappy = q("maxHappy");
+    statsRefs.kings = q("kings");
+    statsRefs.errMade = q("errMade");
+    statsRefs.errLeft = q("errLeft");
+    statsRefs.errBonus = q("errBonus");
+    statsRefs.goal = q("goal");
+    statsRefs.rockets = q("rockets");
+    statsRefs.rocketBtn = container.querySelector("#rocket-btn");
+    statsRefs.testBtn = container.querySelector("#test-reveal-btn");
+    statsRefs.built = true;
+    statsRefs.compact = compact;
+    // Индекс .stat-item по подстроке-ключу — строится один раз, чтобы
+    // showStatBoost() не делал querySelectorAll на каждый бонус.
+    buildStatItemIndex(container);
+  }
+
+  // Кэш .stat-item по ключевым словам («Ходы», «Время», «Довольные» и т.д.).
+  let statItemIndex = null;
+  function buildStatItemIndex(container) {
+    statItemIndex = new Map();
+    const items = container.querySelectorAll(".stat-item");
+    const keys = ["Ходы", "Время", "Довольные", "Недовольные", "Короли", "Ошибки"];
+    for (const key of keys) {
+      let found = null;
+      for (const el of items) {
+        if (el.textContent.includes(key)) { found = el; break; }
+      }
+      statItemIndex.set(key, found);
+    }
+  }
+
+  // Быстрый доступ к .stat-item без повторного поиска в DOM.
+  function statEl(word) {
+    if (!statItemIndex) buildStatItemIndex(stats);
+    return statItemIndex.get(word) || null;
+  }
+
+  // Обновить HUD: при первом вызове/смене раскладки/появлении кнопки — собрать
+  // структуру, далее менять только текст (дёшево, без пересборки DOM).
+  function updateStatsDom(container, d) {
+    const needRebuild = !statsRefs.built ||
+      statsRefs.compact !== d.compact ||
+      (!!statsRefs.testBtn !== d.showTestRevealBtn);
+    if (needRebuild) buildStatsDom(container, d.compact, d.showTestRevealBtn);
+
+    const set = (el, val) => { if (el && el.textContent !== val) el.textContent = val; };
+
+    set(statsRefs.movesVal, String(d.movesRemaining));
+    set(statsRefs.movesVal2, String(d.movesMade));
+    if (statsRefs.movesWord) {
+      set(statsRefs.movesWord, "осталось");
+      statsRefs.movesWord.style.cssText = d.movesColor;
+    }
+    if (statsRefs.movesVal) statsRefs.movesVal.style.cssText = d.movesColor;
+    if (statsRefs.movesVal2) statsRefs.movesVal2.style.cssText = d.movesColor;
+
+    set(statsRefs.time, formatTime(d.levelRemainingMs));
+    if (statsRefs.timeItem) statsRefs.timeItem.style.cssText = d.timerColor;
+    set(statsRefs.elapsed, formatTime(d.elapsedMs));
+    set(statsRefs.happy, String(d.happy));
+    set(statsRefs.unhappy, String(d.unhappy));
+    set(statsRefs.maxHappy, String(d.maxHappyCats));
+    set(statsRefs.kings, String(d.kingsCount));
+    set(statsRefs.errMade, String(d.errorsMade));
+    set(statsRefs.errLeft, String(d.currentErrorsRemaining));
+    set(statsRefs.errBonus, d.bonusErrorsLeft > 0 ? ` | Бонус: ${d.bonusErrorsLeft}` : "");
+    set(statsRefs.goal, `${d.happy}/${d.totalCats}`);
+    set(statsRefs.rockets, String(getRockets()));
+    if (statsRefs.rocketBtn) {
+      statsRefs.rocketBtn.classList.toggle("rocket-btn-disabled", !d.canUseRocket);
+      statsRefs.rocketBtn.disabled = !d.canUseRocket;
+    }
   }
 
   // ==== Рыбка (адаптация royal-socio-cats: useRocket + showRocketBoost) ====
@@ -1096,12 +1243,11 @@ export async function startAntiLevel(root, levelId) {
   }
 
   function showRocketBoost() {
-    const items = Array.from(stats.querySelectorAll(".stat-item"));
-    const find = (word) => items.find((el) => el.textContent.includes(word));
+    // Используем кэшированные ссылки на .stat-item (без querySelectorAll).
     const targets = [
-      { el: find("Ходы"), text: "+10 ходов" },
-      { el: find("Время"), text: "+20 сек" },
-      { el: find("Рыбки"), text: '-1 <img class="fish-icon" src="assets/icons/fish.png" alt="">' },
+      { el: statEl("Ходы"), text: "+10 ходов" },
+      { el: statEl("Время"), text: "+20 сек" },
+      { el: statEl("Рыбки"), text: '-1 <img class="fish-icon" src="assets/icons/fish.png" alt="">' },
     ];
     for (const t of targets) {
       if (!t.el) continue;
@@ -1232,11 +1378,10 @@ export async function startAntiLevel(root, levelId) {
       addTotalTime(elapsedMs);
     }
     stopBoardLayoutListener();
-    document.removeEventListener("keydown", onModalKeyDown);
+    // Закрываем и уничтожаем модальное окно Tingle (снимает свои слушатели)
+    if (modalHoldTimer) { clearTimeout(modalHoldTimer); modalHoldTimer = null; }
+    try { socioTingle.destroy(); } catch (e) { /* окно могло не открываться */ }
     document.removeEventListener("keydown", onCheatKeyDown);
-    document.removeEventListener("pointerdown", onDocPointerDown);
-    window.removeEventListener("resize", onViewportResize);
-    window.visualViewport?.removeEventListener("resize", onViewportResize);
     window.removeEventListener("resize", statsResizeListener);
     window.visualViewport?.removeEventListener("resize", statsResizeListener);
     window.visualViewport?.removeEventListener("scroll", statsResizeListener);

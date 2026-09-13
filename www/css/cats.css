@@ -63,15 +63,21 @@
   50% { transform: translateY(-10px); }
 }
 
+/* ПРОИЗВОДИТЕЛЬНОСТЬ: раньше все недовольные коты (mood <= 0) имели
+   бесконечную CSS-анимацию jump + will-change:transform. При 10–40 котах это
+   означало десятки одновременно анимируемых слоёв с drop-shadow-фильтром —
+   постоянная перерисовка 60 раз/сек и просадка FPS («замедления на поле»).
+   Теперь прыжок — одиночная короткая анимация только у ЯВНО недовольных
+   котов (mood <= -1), проигрывается один раз за смену настроения
+   (её запускает JS через класс .cat-land / .mood-change) и не крутится вечно.
+   Нейтральные коты (mood 0) больше не анимируются вовсе. */
 .cell[data-mood="-6"] img.cat,
 .cell[data-mood="-5"] img.cat,
 .cell[data-mood="-4"] img.cat,
 .cell[data-mood="-3"] img.cat,
 .cell[data-mood="-2"] img.cat,
-.cell[data-mood="-1"] img.cat,
-.cell[data-mood="0"] img.cat {
-  will-change: transform;
-  animation: jump 1s ease-in-out infinite;
+.cell[data-mood="-1"] img.cat {
+  animation: jump 1s ease-in-out 1;
 }
 
 /* Progressive golden glow for happy cats */
@@ -349,22 +355,20 @@
 
 /* ===== Супер-анимации котов ===== */
 
-/* Пульсация выбранной клетки (красное свечение, как в royal-socio-cats) */
-@keyframes cellSelectPulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.6); }
-  50%      { box-shadow: 0 0 12px 4px rgba(255, 0, 0, 0.9); }
-}
+/* ПРОИЗВОДИТЕЛЬНОСТЬ: пульсация box-shadow — НЕ композитится GPU и заставляет
+   перерисовывать слой каждый кадр. Раньше одновременно пульсировали выбранная
+   клетка, все клетки-цели и т.д. Сейчас вместо бесконечной анимации
+   используется статичный box-shadow (отрисовывается один раз), а «живость»
+   даёт лёгкий композитный transition при наведении/касании. */
 #board .cell.selected {
-  animation: cellSelectPulse 1s ease-in-out infinite;
+  box-shadow: 0 0 12px 4px rgba(255, 0, 0, 0.75);
+  transition: box-shadow 0.18s ease;
 }
 
-/* Подсветка клетки-цели */
-@keyframes cellTargetGlow {
-  0%, 100% { box-shadow: inset 0 0 0 2px rgba(80, 200, 255, 0.5); }
-  50%      { box-shadow: inset 0 0 10px 2px rgba(80, 200, 255, 0.9); }
-}
+/* Подсветка клетки-цели — статичная, без бесконечной анимации */
 #board .cell.target {
-  animation: cellTargetGlow 1.2s ease-in-out infinite;
+  box-shadow: inset 0 0 8px 2px rgba(80, 200, 255, 0.85);
+  transition: box-shadow 0.18s ease;
 }
 
 /* ===== Рыбка: показываем куда прибавилось + полёт (вау) ===== */
@@ -456,13 +460,16 @@
 }
 
 /* ===== Коты: приземление после хода и превращение при смене настроения ===== */
+/* Анимация «приземления» играет ровно в момент перемещения кота на новую
+   клетку (cat-land, класс добавляет игра). Ускорена для мгновенного отклика
+   и быстрого визуала движения; остальные анимации (mood-change, jump и пр.)
+   не трогаем. */
 @keyframes catLand {
-  0%   { transform: translateY(-30%) scale(0.8); }
-  60%  { transform: translateY(6%) scale(1.08); }
+  0%   { transform: translateY(-30%) scale(0.85); }
   100% { transform: translateY(0) scale(1); }
 }
 #board .cell .cat.cat-land {
-  animation: catLand 0.3s ease-out !important;
+  animation: catLand 0.12s ease-out !important;
   z-index: 6;
 }
 @keyframes moodChange {
@@ -640,9 +647,8 @@
 }
 
 /* Мобильная адаптация блока социотипа под котом (360–768px, брейкпоинты Bootstrap):
-   имя социотипа переносится на 2 строки вместо обрезки (дополнительно к
-   Bootstrap-утилитам .text-wrap/.text-break), кот компактнее — подпись целиком
-   помещается в клетку и не смещается за нижнюю границу видимой области. */
+   имя социотипа всегда в ОДНУ строку — шрифт при необходимости дополнительно
+   уменьшает JS (fitTypeLabel), перенос на две строки отключён. */
 @media (max-width: 767.98px) {
   #board .cell img.cat {
     width: calc(var(--cat-size) * 0.8);
@@ -650,13 +656,14 @@
   }
 
   .cell .cat-type-label {
-    white-space: normal;
-    overflow-wrap: anywhere;
-    overflow: visible;
+    white-space: nowrap;
+    overflow: hidden;
+    overflow-wrap: normal;
     text-overflow: clip;
     line-height: 1.05;
-    padding: 2px 3px;
+    padding: 1px 2px;
     margin-top: 2px;
-    max-width: calc(var(--cell-w, 90px) - 8px);
+    font-size: 8px;
+    max-width: calc(var(--cell-w, 90px) - 4px);
   }
 }

@@ -22,9 +22,24 @@ function getReservedHeight() {
 // Реальная ширина контента колонки счётчиков. Считаем по скрытой копии вне
 // экрана: если счётчики временно стоят у правого края/за экраном, их собственная
 // ширина сжимается (shrink-to-fit и перенос текста), и резерв получался неверным.
+//
+// ПРОИЗВОДИТЕЛЬНОСТЬ: клонирование узла + getBoundingClientRect() — синхронный
+// reflow. Раньше эта функция вызывалась на КАЖДЫЙ ход (через apply() →
+// refitBoard()), что и давало лаг при перемещении котов. Теперь ширина
+// кэшируется по набору текстов счётчиков и пересчитывается только когда текст
+// реально изменился либо при resize/смене шрифта (см. сброс кэша в
+// fitBoardToViewport через параметр force).
+let statsWidthCache = { key: null, width: 0 };
+
 export function getStatsContentWidth() {
   const statsEl = document.querySelector(".game-stage .stats");
   if (!statsEl) return 0;
+
+  // Ключ кэша — текстовое содержимое счётчиков. Пока счётчики не менялись,
+  // их ширина та же, и клонирование/reflow не нужны.
+  const key = statsEl.textContent || "";
+  if (statsWidthCache.key === key) return statsWidthCache.width;
+
   const clone = statsEl.cloneNode(true);
   // Клон лежит вне .anti-game-stage, поэтому раскладку одноколоночной сетки
   // задаём явно (как в .anti-game-stage .level10-stats).
@@ -34,13 +49,24 @@ export function getStatsContentWidth() {
   document.body.appendChild(clone);
   const w = Math.ceil(clone.getBoundingClientRect().width);
   clone.remove();
+  statsWidthCache = { key, width: w };
   return w;
+}
+
+// Сбросить кэш ширины счётчиков (например, при смене шрифта/темы).
+export function invalidateStatsWidth() {
+  statsWidthCache = { key: null, width: 0 };
 }
 
 export function fitBoardToViewport(boardEl, rows, cols) {
   viewportTarget = boardEl;
 
-  const apply = () => {
+  // Последние применённые размеры. refitBoard() вызывается на КАЖДЫЙ ход,
+  // но реальные размеры поля при этом не меняются — поэтому, если вычисленные
+  // значения совпали с прошлыми, не трогаем style (это экономит reflow).
+  let lastSizes = null;
+
+  const apply = (force = false) => {
     if (!viewportTarget) return;
 
     const { width, height } = getViewportSize();
@@ -72,6 +98,15 @@ export function fitBoardToViewport(boardEl, rows, cols) {
     const labelSize = cellW < 48 ? 8 : cellW < 60 ? 10 : cellW < 72 ? 11 : 13;
     const outline = Math.max(2, Math.round(cellW * 0.035));
 
+    // Ничего не изменилось — не трогаем DOM.
+    if (!force && lastSizes &&
+        lastSizes.cellW === cellW && lastSizes.cellH === cellH &&
+        lastSizes.catSize === catSize && lastSizes.labelSize === labelSize &&
+        lastSizes.outline === outline) {
+      return;
+    }
+    lastSizes = { cellW, cellH, catSize, labelSize, outline };
+
     viewportTarget.style.setProperty("--cell-w", `${cellW}px`);
     viewportTarget.style.setProperty("--cell-h", `${cellH}px`);
     viewportTarget.style.setProperty("--cat-size", `${catSize}px`);
@@ -79,13 +114,16 @@ export function fitBoardToViewport(boardEl, rows, cols) {
     viewportTarget.style.setProperty("--cell-outline", `${outline}px`);
   };
 
-  apply();
+  // Сохраняем ссылку на apply с поддержкой force для refitBoard().
+  activeApply = apply;
+
+  apply(true);
 
   // После загрузки веб-шрифтов ширина текста счётчиков может измениться —
   // пересчитаем размер поля под актуальный резерв.
   if (document.fonts && document.fonts.ready) {
     document.fonts.ready.then(() => {
-      if (viewportTarget === boardEl) apply();
+      if (viewportTarget === boardEl) { invalidateStatsWidth(); apply(true); }
     });
   }
 
@@ -95,18 +133,22 @@ export function fitBoardToViewport(boardEl, rows, cols) {
     window.visualViewport?.removeEventListener("scroll", resizeHandler);
   }
 
-  resizeHandler = apply;
+  // На resize кэш ширины счётчиков может устареть (меняется раскладка) — сбрасываем.
+  resizeHandler = () => { invalidateStatsWidth(); apply(true); };
   window.addEventListener("resize", resizeHandler);
   window.visualViewport?.addEventListener("resize", resizeHandler);
   window.visualViewport?.addEventListener("scroll", resizeHandler);
 }
 
+let activeApply = null;
+
 export function refitBoard() {
-  if (resizeHandler) resizeHandler();
+  if (activeApply) activeApply(false);
 }
 
 export function stopBoardLayoutListener() {
   viewportTarget = null;
+  activeApply = null;
   if (resizeHandler) {
     window.removeEventListener("resize", resizeHandler);
     window.visualViewport?.removeEventListener("resize", resizeHandler);

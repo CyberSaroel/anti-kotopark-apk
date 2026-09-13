@@ -1,9 +1,10 @@
 // Прогресс прохождения уровней — в localStorage браузера.
-const KEY = "socio-cats:completed";
+const KEY = "ak_completed";
 
 export function getCompleted() {
-  try { return new Set(JSON.parse(localStorage.getItem(KEY) || "[]")); }
-  catch { return new Set(); }
+  try {
+    return new Set(JSON.parse(localStorage.getItem(KEY) || "[]"));
+  } catch { return new Set(); }
 }
 
 export function isCompleted(id) { return getCompleted().has(id); }
@@ -14,4 +15,6 @@ export function markCompleted(id) {
   localStorage.setItem(KEY, JSON.stringify([...s]));
 }
 
-export function resetProgress() { localStorage.removeItem(KEY); }
+export function resetProgress() {
+  localStorage.removeItem(KEY);
+}

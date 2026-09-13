@@ -1,7 +1,7 @@
-const MUSIC_KEY = "socio-cats:musicEnabled";
-const SFX_KEY = "socio-cats:sfxEnabled";
-const MUSIC_VOLUME_KEY = "socio-cats:musicVolume";
-const SFX_VOLUME_KEY = "socio-cats:sfxVolume";
+const MUSIC_KEY = "ak_music_enabled";
+const SFX_KEY = "ak_sfx_enabled";
+const MUSIC_VOLUME_KEY = "ak_music_volume";
+const SFX_VOLUME_KEY = "ak_sfx_volume";
 // Уменьшаем максимальную громкость музыки в три раза
 const MUSIC_VOLUME_SCALE = 1 / 3;
 

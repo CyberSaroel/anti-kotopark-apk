@@ -68,30 +68,16 @@
   transform: scale(0.98);
 }
 
-/* ===== Всплывающее окно выбора социотипа ===== */
-.socio-modal {
-  /* Без затемнения поля: pointer-events только на карточке,
-     клики вне окна уходят на поле (закрытие — по Escape или повторному тапу). */
-  position: fixed;
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  pointer-events: none;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-.socio-modal[hidden] {
-  display: none;
-}
-
+/* ===== Всплывающее окно выбора социотипа =====
+   Каркас окна (подложка, центрирование, закрытие по фону/Escape) даёт Tingle.js;
+   ниже — оформление самой карточки контента. */
 .socio-modal-card {
   background: #220f13;
   border: 2px solid var(--gilt, #d49a3c);
   border-radius: 14px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.55), 0 0 16px rgba(212, 154, 60, 0.2);
-  /* Компактное окно: ширина подстраивается под контент */
+  /* ПК: прямоугольное окно — ширина по контенту, высота ограничена так,
+     чтобы влезать на экран. Мобильная версия (≤768px) задаётся ниже. */
   width: max-content;
   min-width: 260px;
   max-width: calc(100vw - 16px);
@@ -102,10 +88,13 @@
   pointer-events: auto;
   box-sizing: border-box;
   position: relative;
-  /* Плавное появление: затухание + лёгкое увеличение 0.9 → 1 за 300 мс */
+  /* Быстрое появление: короткое затухание + лёгкое увеличение (150 мс),
+     а одновременно вокруг окна «выходит» огненный ореол (flame burst). */
   transform-origin: center;
   will-change: transform, opacity;
-  animation: socio-modal-in 300ms ease-out;
+  animation:
+    socio-modal-in 150ms ease-out,
+    socio-modal-fire-in 620ms ease-out;
 }
 
 /* Изображения декорации в модальном окне социотипов */
@@ -113,8 +102,8 @@
   position: absolute;
   top: 0;
   left: 0;
-  width: 60px;
-  height: 60px;
+  width: 72px; /* было 60px — чуть увеличил */
+  height: 72px; /* было 60px — чуть увеличил */
   background-image: url("../assets/socio-modal/left.png");
   background-size: contain;
   background-repeat: no-repeat;
@@ -137,15 +126,19 @@
   z-index: 1;
 }
 
-/* Закрытие: плавное затухание + уменьшение 1 → 0.9 за 300 мс */
+/* Закрытие: быстрое затухание окна (200 мс) вместе с коротким огненным
+   «всплеском», гаснущим одновременно — окно уходит «в огонь», а не просто
+   пропадает. Длительности держим равными, чтобы hide сработал синхронно. */
 .socio-modal-card.closing {
-  animation: socio-modal-out 300ms ease-in forwards;
+  animation:
+    socio-modal-out 200ms ease-in forwards,
+    socio-modal-fire-out 200ms ease-in forwards;
 }
 
 @keyframes socio-modal-in {
   from {
     opacity: 0;
-    transform: scale(0.9);
+    transform: scale(0.95);
   }
   to {
     opacity: 1;
@@ -160,8 +153,29 @@
   }
   to {
     opacity: 0;
-    transform: scale(0.9);
+    transform: scale(0.95);
   }
+}
+
+/* ===== Огненный ореол вокруг модального окна =====
+   Анимируем box-shadow самой карточки (она не обрезается своим overflow),
+   поэтому «пламя» живёт за границей золотой рамки. Вспышка на ПОЯВЛЕНИЕ
+   разгорается и чуть «дрожит», на ЗАКРЫТИЕ — коротко ярче и гаснет. */
+@keyframes socio-modal-fire-in {
+  0%   { box-shadow: 0 0 0 0 rgba(255, 150, 0, 0),    0 0 0 0 rgba(255, 60, 0, 0),     0 0 0 0 rgba(255, 220, 60, 0); }
+  18%  { box-shadow: 0 0 6px 1px rgba(255, 150, 0, .45),  0 0 14px 4px rgba(255, 80, 0, .18), 0 0 22px 10px rgba(255, 220, 60, .10); }
+  32%  { box-shadow: 0 0 9px 2px rgba(255, 170, 0, .55),  0 0 18px 6px rgba(255, 100, 0, .26), 0 0 26px 12px rgba(255, 230, 120, .16); }
+  47%  { box-shadow: 0 0 7px 1px rgba(255, 130, 0, .42),  0 0 16px 5px rgba(255, 80, 0, .22),  0 0 24px 11px rgba(255, 200, 60, .14); }
+  62%  { box-shadow: 0 0 10px 3px rgba(255, 170, 0, .5),  0 0 19px 7px rgba(255, 100, 0, .26), 0 0 28px 13px rgba(255, 236, 130, .18); }
+  80%  { box-shadow: 0 0 7px 1px rgba(255, 140, 0, .38),  0 0 12px 3px rgba(255, 70, 0, .16),  0 0 18px 6px rgba(212, 154, 60, .16); }
+  100% { box-shadow: 0 0 16px 2px rgba(212, 154, 60, .35), 0 0 26px 10px rgba(212, 154, 60, .12); }
+}
+
+@keyframes socio-modal-fire-out {
+  0%   { box-shadow: 0 0 16px 2px rgba(212, 154, 60, .35),  0 0 26px 10px rgba(212, 154, 60, .12); }
+  35%  { box-shadow: 0 0 10px 3px rgba(255, 170, 0, .6),    0 0 24px 9px rgba(255, 100, 0, .3),  0 0 32px 15px rgba(255, 220, 60, .2); }
+  70%  { box-shadow: 0 0 6px 1px rgba(255, 130, 0, .45),    0 0 12px 4px rgba(255, 70, 0, .22),  0 0 16px 8px rgba(212, 154, 60, .1); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 120, 0, 0),          0 0 0 0 rgba(255, 60, 0, 0),        0 0 0 0 rgba(212, 154, 60, 0); }
 }
 
 .socio-modal-header {
@@ -175,7 +189,7 @@
 }
 
 .socio-modal-title {
-  font-size: 16px;
+  font-size: 23px; /* ПК-версия: было 16px, чуть увеличил */
   font-weight: bold;
   color: var(--gilt-highlight, #f3d27a);
   text-align: center;
@@ -209,16 +223,17 @@
   transform: rotate(90deg);
 }
 
-/* Сетка типов: 4 столбца × 4 строки (по 4 социотипа в каждом столбце) */
+/* Сетка типов: колонки шириной по самой длинной кнопке (текст в одну строку,
+   ничего не обрезается). Окно само расширяется по ширине содержимого. */
 .socio-modal-list {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(4, max-content);
   gap: 6px;
   padding: 12px;
+  width: max-content;
+  min-height: 0;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  min-height: 0;
-  width: min(460px, calc(100vw - 16px));
   box-sizing: border-box;
 }
 
@@ -226,14 +241,41 @@
    длинные имена аккуратно переносятся внутри ячейки */
 .socio-modal-list .socio-modal-type-btn {
   text-align: center;
-  font-size: 13px;
+  font-size: 25px; /* ПК-версия: 25px */
   padding: 8px 4px;
   justify-self: stretch;
   align-self: stretch;
-  white-space: normal;
-  overflow-wrap: break-word;
+  white-space: nowrap; /* текст типа — всегда в одну строку */
   line-height: 1.2;
   color: #fff;
+}
+
+/* При первом открытии ни один вариант не должен быть «отмечен»: фокус-подсветка
+   появляется только у элемента, к которому реально перешли (клавиатурой).
+   Фокус от мыши/тача кнопке рамку не добавляет — иначе браузер показывал бы
+   один из вариантов выделенным ещё до выбора игрока. */
+.socio-modal-type-btn:focus {
+  outline: none;
+}
+.socio-modal-type-btn:focus-visible {
+  outline: 2px solid #ffd700;
+  outline-offset: 1px;
+}
+
+/* Пока окно не открыли для реального выбора, кнопки не должны выглядеть
+   «полными как выбранные». appearance в вариантах как default системных
+   контролов; фокус, полученный мышь/тачем (не клавиатурой), рамки не даёт. */
+.socio-modal-list .socio-modal-type-btn {
+  -webkit-appearance: none;
+  appearance: none;
+  outline: none;
+}
+.socio-modal-type-btn:focus:not(:focus-visible) {
+  box-shadow: none;
+}
+/* пока держится «hold»-класс — гасим и hover, и фокус-подсветку одновременно */
+.socio-modal-card.socio-modal-hold .socio-modal-type-btn:hover {
+  box-shadow: none;
 }
 
 /* Highlight for type-selected cat */
@@ -292,7 +334,12 @@
   background: var(--button-hover);
 }
 
-/* Mobile responsive: поле по центру, статистика внизу, модалка на весь экран */
+/* Mobile responsive: поле по центру, статистика внизу.
+   Окно выбора социотипа на телефоне — КОМПАКТНОЕ (не растягивается на весь
+   экран): подложка затемняет всё, но само окно центрировано и ограничено по
+   ширине/высоте так, чтобы помещаться на любом маленьком экране. Кнопки
+   социотипов всегда остаются в ДВА СТОЛБЦА и прокручиваются внутри окна,
+   если не хватает высоты. */
 @media (max-width: 768px) {
   .anti-game-stage {
     flex-direction: column;
@@ -300,41 +347,79 @@
     padding: 10px;
     gap: 10px;
   }
-  
+
   .board-area {
     order: 1;
   }
-  
+
   .anti-game-stage .stats {
     order: 2;
     width: 100%;
     max-width: 400px;
   }
-  
-  .socio-modal {
-    padding: 0;
-    align-items: flex-start;
-  }
-  
-  /* На телефоне окно тоже компактное, ширина по контенту */
+
+  /* Подложку и центрирование окна теперь даёт Tingle.js (см. css/tingle-theme.css),
+     поэтому здесь остаются только размеры компактной карточки. */
+
+  /* Компактная карточка: авто-ширина под 2 колонки, но не шире экрана;
+     высота по содержимому, но не выше вьюпорта. */
   .socio-modal-card {
-    width: max-content;
-    max-width: calc(100vw - 12px);
+    width: min(420px, calc(100vw - 24px));
     min-width: 0;
-    max-height: min(78vh, 520px);
+    max-width: none;
+    height: auto;
+    max-height: calc(100dvh - 40px);
+    max-height: calc(100vh - 40px); /* фолбэк без dvh */
+    border-radius: 14px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
   }
-  
-  /* На телефонах список типов перестраивается: 2 колонки × 8 строк */
+
+  .socio-modal-header {
+    flex-shrink: 0;
+    padding: 14px 16px;
+  }
+
+  .socio-modal-title {
+    font-size: 17px; /* как было в git до правки фиксмодал (было 8px) */
+    white-space: normal;
+    line-height: 1.3;
+  }
+
+  /* На мобильной версии заголовок условно «Выберите <br> социотип — кот №N»
+     складываем в 2 ряда: 1-я строка «Выберите», 2-я «социотип — кот №N». */
+  .socio-modal-title-prefix,
+  .socio-modal-title-cat {
+    display: block;
+  }
+
+  .socio-modal-close {
+    width: 44px;
+    height: 44px;
+    min-height: 44px;
+    font-size: 22px;
+  }
+
+  /* Кнопки социотипов — строго в 2 столбца на любом маленьком экране.
+     Если высоты не хватает, список прокручивается внутри окна. */
   .socio-modal-list {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 6px;
+    gap: 8px;
     padding: 10px;
-    width: min(320px, calc(100vw - 12px));
+    width: 100%;
+    box-sizing: border-box;
   }
 
   .socio-modal-list .socio-modal-type-btn {
-    font-size: 12px;
-    padding: 8px 8px;
+    font-size: 22px; /* текст в кнопках: в 2 раза крупнее (было 13px) */
+    padding: 12px 8px;
+    min-height: 48px;
+    white-space: nowrap; /* одна строка без переноса */
   }
 }
 

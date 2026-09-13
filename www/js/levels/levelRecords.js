@@ -1,4 +1,4 @@
-const RECORDS_KEY = "socio-cats:levelRecords";
+const RECORDS_KEY = "ak_level_records";
 
 function normalizeRecord(raw) {
   if (raw === undefined || raw === null) return {};

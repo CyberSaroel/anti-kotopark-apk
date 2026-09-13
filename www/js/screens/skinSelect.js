@@ -1,11 +1,12 @@
 import { audioManager } from "../core/audioManager.js";
 import NavigationService from "../core/navigation.js";
 
-const SKIN_KEY = "socio-cats:selectedSkin";
+const SKIN_KEY = "ak_selected_skin";
 
 export function getSelectedSkin() {
-  try { return localStorage.getItem(SKIN_KEY) || "classic"; }
-  catch { return "classic"; }
+  try {
+    return localStorage.getItem(SKIN_KEY) || "classic";
+  } catch { return "classic"; }
 }
 
 export function setSelectedSkin(skinId) {

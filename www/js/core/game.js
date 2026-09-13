@@ -1,7 +1,6 @@
 import { Board } from "./board.js";
 import { canMove, applyMove } from "./movement.js";
 import { isWin } from "./victory.js";
-import { calcMood } from "../socionics/mood.js";
 
 // Контроллер состояния игры. Не знает про DOM (рисует renderer.js).
 export class Game {
@@ -12,7 +11,7 @@ export class Game {
     this.moveCount = 0;
   }
 
-  moodAt(r, c)     { return calcMood(this.board, r, c); }
+  moodAt(r, c)     { return this.board.moodAt(r, c); }
   isSelected(r, c) { return !!this.selected && this.selected.r === r && this.selected.c === c; }
   isTarget(r, c)   { return !!this.selected && canMove(this.board, this.selected, { r, c }); }
   isWin()          { return isWin(this.board); }

@@ -43,14 +43,18 @@ button {
     50% { transform: translateY(-5px); }
   }
 
+  /* ПРОИЗВОДИТЕЛЬНОСТЬ: как и на ПК, прыжок — одиночная анимация только для
+     явно недовольных котов (mood <= -1), без бесконечного цикла и без
+     will-change (иначе десятки котов держат собственные GPU-слои). */
   .cell[data-mood="-6"] img.cat,
   .cell[data-mood="-5"] img.cat,
   .cell[data-mood="-4"] img.cat,
   .cell[data-mood="-3"] img.cat,
   .cell[data-mood="-2"] img.cat,
-  .cell[data-mood="-1"] img.cat,
-  .cell[data-mood="0"] img.cat {
+  .cell[data-mood="-1"] img.cat {
     animation-name: jump-mobile;
+    animation-duration: 1s;
+    animation-iteration-count: 1;
   }
 
 
@@ -468,6 +472,15 @@ button {
     white-space: nowrap;
     padding: 0 2px;
     box-sizing: border-box;
+  }
+
+  /* Анти-режим: номер кота ближе к верхнему правому краю и мельче */
+  .cell .cat-number {
+    top: 0;
+    right: 0;
+    font-size: 9px;
+    padding: 1px 4px;
+    border-radius: 0 10px 0 6px;
   }
 
   /* Reduce spacing in game stage for mobile */

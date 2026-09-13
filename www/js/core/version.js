@@ -1,6 +1,6 @@
-export const VERSION = "1.2.0";
+export const VERSION = "1.10.0";
 
-const STORAGE_KEY = "socio-cats:version";
+const STORAGE_KEY = "ak_version";
 
 export function saveVersion() {
   try {

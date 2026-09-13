@@ -21,10 +21,23 @@ const TIM = [
   ['БС', 'ЧЛ', 'БИ', 'ЧЭ', 'ЧИ', 'БЭ', 'ЧС', 'БЛ']  // Габ
 ];
 
+// Индекс типа по имени: getRelation() и calcMood() вызываются десятки раз за
+// ход (для каждого кота и каждого его соседа), а TYPES.indexOf() — линейный
+// поиск по 16 элементам. Здесь строим обратный индекс один раз.
+// ВАЖНО: объявлен ДО getRelation(), т.к. RELATION_MATRIX ниже строится через
+// getRelation() при инициализации модуля.
+const TYPE_INDEX = new Map(TYPES.map((t, i) => [t, i]));
+
+// Быстрый поиск индекса: O(1) вместо линейного indexOf.
+export function typeIndex(type) {
+  const i = TYPE_INDEX.get(type);
+  return i === undefined ? -1 : i;
+}
+
 // Возвращает название интертипного отношения type1 -> type2.
 export function getRelation(type1, type2) {
-  const i = TYPES.indexOf(type1);
-  const j = TYPES.indexOf(type2);
+  const i = typeIndex(type1);
+  const j = typeIndex(type2);
   if (i === -1) {
     console.error("Unknown type: " + type1);
     return "деловые";
@@ -79,6 +92,22 @@ export const MOOD_DELTA = {
   "суперэго": -2,
   "полная противоположность": -2
 };
+
+// Числовая матрица вклада в настроение 16x16, проиндексированная ИНДЕКСАМИ типов
+// (а не строками). calcMood() — самая горячая функция (вызывается для каждого
+// кота и каждого его соседа несколько раз за ход), поэтому вместо работы со
+// строками/объектом MOOD_DELTA используем плоский Int8Array: одна индексация
+// по (i * 16 + j) без хеширования строк и без создания промежуточных объектов.
+// Значения полностью соответствуют MOOD_DELTA (строятся из него).
+export const MOOD_DELTA_MATRIX = (() => {
+  const m = new Int8Array(TYPES.length * TYPES.length);
+  for (let i = 0; i < TYPES.length; i++) {
+    for (let j = 0; j < TYPES.length; j++) {
+      m[i * TYPES.length + j] = MOOD_DELTA[RELATION_MATRIX[i][j]] ?? 0;
+    }
+  }
+  return m;
+})();
 
 // Краткие коды для подписей в интерфейсе.
 export const SHORT = {

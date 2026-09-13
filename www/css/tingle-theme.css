@@ -1,0 +1,63 @@
+/* ===== Tingle.js: тема под «Антикотопарк» =====
+   Tingle даёт только подложку и карточку-контейнер; внешний вид окна выбора
+   социотипа задают существующие классы .socio-modal-card и т.д.
+   Здесь «обнуляем» дефолтную белую коробку Tingle и подгоняем подложку. */
+
+/* Подложка: тёмное затемнение как было у самописного окна.
+   Возвращаем «крест»-курсор для клика по фону и убираем размытие (низкие GPU). */
+.tingle-modal.socio-modal-tingle {
+  z-index: 1200;
+  background: rgba(0, 0, 0, 0.6);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  padding: 0;
+}
+
+/* Карточка Tingle — прозрачный «слот»: реальную рамку/фон рисует
+   .socio-modal-card (наша карточка внутри контента). */
+.tingle-modal.socio-modal-tingle .tingle-modal-box {
+  width: auto;
+  max-width: none;
+  margin: auto;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  cursor: auto;
+  animation: none;
+}
+
+.tingle-modal.socio-modal-tingle .tingle-modal-box__content {
+  padding: 0;
+  overflow: visible;
+}
+
+/* Кнопку закрытия и футер Tingle не используем: закрытие — наш крестик
+   в шапке окна, клик по подложке и Escape (closeMethods: overlay, escape). */
+.tingle-modal.socio-modal-tingle .tingle-modal__close {
+  display: none;
+}
+
+/* Мобильная версия: подложка на весь вьюпорт, карточка компактная (её размеры
+   и двухрядный заголовок задаются в css/anti-game.css). */
+@media (max-width: 768px) {
+  .tingle-modal.socio-modal-tingle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+  }
+
+  .tingle-modal.socio-modal-tingle .tingle-modal-box {
+    width: auto;
+    max-width: none;
+    margin: 0 auto;
+    border-radius: 0;
+  }
+
+  .tingle-modal.socio-modal-tingle .tingle-modal-box__content {
+    max-height: 100dvh;
+    max-height: 100vh;
+    overflow: visible;
+  }
+}

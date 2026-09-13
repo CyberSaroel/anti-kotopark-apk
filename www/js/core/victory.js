@@ -1,11 +1,20 @@
-import { calcMood } from "../socionics/mood.js";
-
 // Победа: у ВСЕХ котов настроение >= +1 (все зелёные).
+// Используем кэширующий board.moodAt(): один и тот же mood переиспользуется
+// между отрисовкой, HUD и проверкой победы в пределах одного хода.
 export function isWin(board) {
-  return board.allCats().every(({ r, c }) => calcMood(board, r, c) >= 1);
+  const cats = board.allCats();
+  for (let i = 0; i < cats.length; i++) {
+    if (board.moodAt(cats[i].r, cats[i].c) < 1) return false;
+  }
+  return true;
 }
 
 // Сколько котов ещё не зелёные (для подсказок/прогресса).
 export function unhappyCount(board) {
-  return board.allCats().filter(({ r, c }) => calcMood(board, r, c) < 1).length;
+  const cats = board.allCats();
+  let n = 0;
+  for (let i = 0; i < cats.length; i++) {
+    if (board.moodAt(cats[i].r, cats[i].c) < 1) n++;
+  }
+  return n;
 }
