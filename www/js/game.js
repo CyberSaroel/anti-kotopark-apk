@@ -1125,9 +1125,10 @@ export async function startAntiLevel(root, levelId) {
       `<div class="stat-item">🏆 Цель: зелёные <span data-k="goal"></span></div>`
     ];
 
-    const rocketBtn = `<button class="rocket-btn" id="rocket-btn"><img class="fish-icon" src="assets/icons/fish.png" alt="">&nbsp;Рыбки: <span data-k="rockets"></span></button>`;
+    // stat-item: кнопка «Рыбки» переиспользует класс счётчиков (единый визуал).
+    const rocketBtn = `<button class="stat-item rocket-btn" id="rocket-btn"><img class="fish-icon" src="assets/icons/fish.png" alt="">&nbsp;Рыбки: <span data-k="rockets"></span></button>`;
     const testBtn = hasTestBtn
-      ? `<button class="rocket-btn test-tool-btn" id="test-reveal-btn" type="button">🧠 Открыть типы всех котов</button>`
+      ? `<button class="stat-item rocket-btn test-tool-btn" id="test-reveal-btn" type="button">🧠 Открыть типы всех котов</button>`
       : "";
 
     if (compact) {

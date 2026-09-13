@@ -517,7 +517,9 @@ export async function showGameScreen(root, levelId) {
     const kingsCount = won ? kingsThisLevelAtWin : getKingsThisLevel();
     const rocketsCount = getRockets();
     const canUseRocket = !rocketBtnDisabled && rocketsCount > 0 && !won && !impeached;
-    const rocketBtnClass = `rocket-btn ${!canUseRocket ? 'rocket-btn-disabled' : ''}`;
+    // stat-item: кнопка «Рыбки» переиспользует класс счётчиков — одинаковые
+    // размеры, отступы, шрифт, цвета, рамка и тень во всех брейкпоинтах и темах.
+    const rocketBtnClass = `stat-item rocket-btn ${!canUseRocket ? 'rocket-btn-disabled' : ''}`;
     stats.innerHTML = compact ? `
       <div class="container-fluid px-0">
         <div class="row g-2 text-end justify-content-end">

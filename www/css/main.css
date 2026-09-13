@@ -250,7 +250,8 @@ button {
 
 button:hover { background: var(--button-hover); }
 
-/* Rocket button styles moved to cats.css for physical button design */
+/* Кнопка «Рыбки»: визуал полностью задаётся общим классом .stat-item
+   (см. .rocket-btn в cats.css — там только свойства кнопки). */
 .rocket-btn-disabled { opacity: 0.5; cursor: default; }
 
 #message {
@@ -262,7 +263,8 @@ button:hover { background: var(--button-hover); }
 }
 
 /* Responsive styles for stat items - all breakpoints.
-   Размеры синхронизированы с кнопкой «Рыбка» (.rocket-btn): тот же внешний контур. */
+   Единый источник размеров и для кнопки «Рыбка»: она несёт класс .stat-item,
+   поэтому автоматически следует этим же правилам на каждом брейкпоинте. */
 @media (min-width: 320px) and (max-width: 575.98px) { /* xs */
   .game-stage .stats .stat-item {
     font-size: 10px;

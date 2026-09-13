@@ -239,24 +239,14 @@
   opacity: 0.9;
 }
 
-/* Rocket button styles - physical button design */
+/* Кнопка «Рыбки»: весь визуал (размеры, отступы, шрифт, цвета, рамка, тень,
+   выравнивание) переиспользует существующий класс .stat-item — те же правила,
+   что у счётчиков HUD, во всех брейкпоинтах, ориентациях и темах. Здесь —
+   только свойства, присущие именно кнопке. */
 .rocket-btn {
   width: 100%;
-  min-height: 36px;
-  padding: 8px 12px;
-  border: 3px solid #000000;
-  border-radius: 12px;
-  background: #310d1b;
-  color: #f4e6b0 !important;
-  font-weight: bold;
-  font-size: 14px;
-  line-height: 1.3;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  white-space: nowrap;
+  font-family: inherit; /* кнопки не наследуют шрифт body — синхронизируем со счётчиками */
   cursor: pointer;
-  box-shadow: 0 6px 0 #000000, inset 0 2px 0 rgba(255, 255, 255, 0.3), 0 8px 10px rgba(0, 0, 0, 0.35);
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
 }
@@ -483,26 +473,9 @@
   z-index: 6;
 }
 
-/* Мобильная версия: кнопка "Рыбки" — размером с окошки-счётчики рядом */
-@media (max-width: 768px) {
-  .rocket-btn {
-    min-height: 32px;
-    padding: 6px 8px;
-    font-size: 11px;
-    line-height: 1.3;
-    border-width: 2px;
-    border-radius: 8px;
-    box-sizing: border-box;
-    box-shadow: 0 3px 0 #000000, inset 0 2px 0 rgba(255,255,255,0.3), 0 4px 6px rgba(0,0,0,0.3);
-  }
-}
-@media (max-width: 575.98px) {
-  .rocket-btn {
-    min-height: 28px;
-    padding: 4px 6px;
-    font-size: 10px;
-  }
-}
+/* Размеры кнопки «Рыбки» больше НЕ дублируются здесь: во всех брейкпоинтах
+   (xs/sm/md/lg/xl, портрет/ландшафт) их задают общие правила .stat-item из
+   main.css / mobile.css — кнопка визуально идентична счётчикам. */
 
 /* ============================================================
  * Надписи под котами: читаемость на всех темах.
